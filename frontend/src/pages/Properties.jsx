@@ -82,7 +82,7 @@ export default function Properties() {
         .from('properties')
         .select(`
           *,
-          landlords (
+          landlords!properties_company_landlord_fk (
             id,
             landlord_no,
             surname,

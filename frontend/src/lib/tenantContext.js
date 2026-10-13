@@ -12,24 +12,10 @@ export async function getTenantContext() {
     throw new Error('Not authenticated')
   }
 
-  // Query branch_memberships for this user
+  // 1. Fetch active branch membership for this user (sequential, avoids compound FK ambiguous embed)
   const { data: memberships, error: membershipError } = await supabase
     .from('branch_memberships')
-    .select(`
-      company_id,
-      branch_id,
-      branches (
-        id,
-        name,
-        code,
-        city
-      ),
-      companies (
-        id,
-        name,
-        slug
-      )
-    `)
+    .select('company_id, branch_id')
     .eq('user_id', user.id)
     .eq('status', 'active')
     .limit(1)
@@ -44,13 +30,28 @@ export async function getTenantContext() {
   }
 
   const mem = memberships[0]
+
+  // 2. Fetch branch and company details cleanly in parallel
+  const [branchRes, companyRes] = await Promise.all([
+    supabase
+      .from('branches')
+      .select('id, name, code, city')
+      .eq('id', mem.branch_id)
+      .maybeSingle(),
+    supabase
+      .from('companies')
+      .select('id, name, slug')
+      .eq('id', mem.company_id)
+      .maybeSingle(),
+  ])
+
   cachedContext = {
     userId: user.id,
     companyId: mem.company_id,
     branchId: mem.branch_id,
-    companyName: mem.companies?.name || 'ProMatrix Real Estate Agency',
-    branchName: mem.branches?.name || 'Thika Head Office',
-    branchCode: mem.branches?.code || 'THK-01',
+    companyName: companyRes?.data?.name || 'ProMatrix Real Estate Agency',
+    branchName: branchRes?.data?.name || 'Thika Head Office',
+    branchCode: branchRes?.data?.code || 'THK-01',
   }
 
   return cachedContext

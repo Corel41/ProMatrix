@@ -101,18 +101,18 @@ export default function Leases() {
         .from('leases')
         .select(`
           *,
-          properties (
+          properties!leases_company_property_fk (
             id,
             property_code,
             name
           ),
-          units (
+          units!leases_company_unit_fk (
             id,
             unit_number,
             unit_category,
             floor_level
           ),
-          tenants (
+          tenants!leases_company_tenant_fk (
             id,
             tenant_no,
             full_name,

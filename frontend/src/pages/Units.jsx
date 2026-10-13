@@ -92,7 +92,7 @@ export default function Units() {
         .from('units')
         .select(`
           *,
-          properties (
+          properties!units_company_property_fk (
             id,
             property_code,
             name,
