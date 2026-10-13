@@ -1,7 +1,3 @@
--- =============================================================================
--- ProMatrix: Seed Sample Data from Thika Database
--- =============================================================================
-
 DO $$
 DECLARE
     v_user_id       UUID;
@@ -9,14 +5,12 @@ DECLARE
     v_branch_id     UUID;
     v_role_id       UUID;
 
-    -- Landlord IDs
     v_ll_hazina     UUID := gen_random_uuid();
     v_ll_fariji     UUID := gen_random_uuid();
     v_ll_chimney    UUID := gen_random_uuid();
     v_ll_immanuel   UUID := gen_random_uuid();
     v_ll_plot65     UUID := gen_random_uuid();
 
-    -- Property IDs
     v_prop_hazina   UUID := gen_random_uuid();
     v_prop_fariji   UUID := gen_random_uuid();
     v_prop_chimney  UUID := gen_random_uuid();
@@ -28,7 +22,6 @@ DECLARE
     v_prop_beatrice UUID := gen_random_uuid();
     v_prop_kiganjo  UUID := gen_random_uuid();
 
-    -- Financial Seeding Variables
     v_pid           UUID;
     v_lease_hz1     UUID;
     v_lease_hz2     UUID;
@@ -45,13 +38,12 @@ DECLARE
     v_c_service     UUID;
 
 BEGIN
-    -- 1. Identify active user profile
+
     SELECT id INTO v_user_id FROM public.user_profiles ORDER BY created_at ASC LIMIT 1;
     IF v_user_id IS NULL THEN
         RAISE EXCEPTION 'No user_profiles record found. Please sign up or check auth.';
     END IF;
 
-    -- 2. Retrieve or create Company
     SELECT id INTO v_company_id FROM public.companies WHERE slug = 'promatrix-real-estate' LIMIT 1;
     IF v_company_id IS NULL THEN
         INSERT INTO public.companies (
@@ -63,11 +55,9 @@ BEGIN
             'KES', 'KES', 'Africa/Nairobi', 1, 'active', v_user_id
         ) RETURNING id INTO v_company_id;
 
-        -- Seed system roles
         PERFORM public.seed_company_system_roles(v_company_id, v_user_id);
     END IF;
 
-    -- 3. Retrieve or create Head Office Branch
     SELECT id INTO v_branch_id FROM public.branches WHERE company_id = v_company_id AND code = 'THK-01' LIMIT 1;
     IF v_branch_id IS NULL THEN
         INSERT INTO public.branches (
@@ -83,21 +73,17 @@ BEGIN
         ) RETURNING id INTO v_branch_id;
     END IF;
 
-    -- 4. Ensure Super Admin role assignment
-    SELECT id INTO v_role_id FROM public.roles_permissions 
+    SELECT id INTO v_role_id FROM public.roles_permissions
     WHERE company_id = v_company_id AND role_slug = 'company_super_admin' LIMIT 1;
 
-    -- Ensure Company Membership
     INSERT INTO public.company_memberships (company_id, user_id, role_id, status, created_by)
     VALUES (v_company_id, v_user_id, v_role_id, 'active', v_user_id)
     ON CONFLICT DO NOTHING;
 
-    -- Ensure Branch Membership
     INSERT INTO public.branch_memberships (company_id, branch_id, user_id, role_id, is_default_branch, status, created_by)
     VALUES (v_company_id, v_branch_id, v_user_id, v_role_id, TRUE, 'active', v_user_id)
     ON CONFLICT DO NOTHING;
 
-    -- 5. Seed Standard Charge Types Catalog
     INSERT INTO public.charge_types (company_id, code, name, description, is_compulsory, is_refundable, is_commissionable, is_recurring, allocation_priority)
     VALUES
         (v_company_id, '001', 'Rent', 'Monthly Space Rent', TRUE, FALSE, TRUE, TRUE, 30),
@@ -110,7 +96,6 @@ BEGIN
         (v_company_id, '035', 'Default Penalty', 'Late Rent Payment Penalty Fee', FALSE, FALSE, TRUE, FALSE, 25)
     ON CONFLICT (company_id, code) DO NOTHING;
 
-    -- 6. Seed 5 Representative Landlords from Thika DB
     INSERT INTO public.landlords (
         id, company_id, branch_id, landlord_no, surname, other_names, id_or_registration_no, tax_pin, phone, email,
         bank_name, bank_branch, bank_account_no, bank_account_name, remittance_mode, status, created_by
@@ -122,14 +107,12 @@ BEGIN
         (v_ll_plot65, v_company_id, v_branch_id, 'L028', 'Njoroge', 'Alice Wanjiru', '28200037', 'A014829104Z', '+254727945129', 'alice.njoroge@yahoo.com', 'Absa Bank Kenya', 'Thika Branch', '0309284712', 'Alice Wanjiru Njoroge', 'eft', 'active', v_user_id)
     ON CONFLICT (company_id, landlord_no) DO NOTHING;
 
-    -- Fetch actual landlord IDs (in case they already exist)
     SELECT id INTO v_ll_hazina FROM public.landlords WHERE landlord_no = 'L001' AND company_id = v_company_id;
     SELECT id INTO v_ll_fariji FROM public.landlords WHERE landlord_no = 'L003' AND company_id = v_company_id;
     SELECT id INTO v_ll_chimney FROM public.landlords WHERE landlord_no = 'L005' AND company_id = v_company_id;
     SELECT id INTO v_ll_immanuel FROM public.landlords WHERE landlord_no = 'L007' AND company_id = v_company_id;
     SELECT id INTO v_ll_plot65 FROM public.landlords WHERE landlord_no = 'L028' AND company_id = v_company_id;
 
-    -- 7. Seed 10 Representative Properties from Thika DB
     INSERT INTO public.properties (
         id, company_id, branch_id, landlord_id, property_code, name, lr_number, property_type, location_description, city,
         commission_rate, commission_type, commission_basis, is_vatable, remittance_day, caretaker_name, caretaker_phone, parking_spaces, parking_fee, total_floors, status, created_by
@@ -146,18 +129,15 @@ BEGIN
         (v_prop_kiganjo, v_company_id, v_branch_id, v_ll_plot65, 'KIGANJO-RUHENI', 'Kiganjo Ruheni Heights', 'LR-KIGANJO-SEC4-18', 'residential', 'Kiganjo Town Center', 'Thika', 8.00, 'percentage', 'collected', TRUE, 10, 'David Mwangi', '+254729555777', 8, 500.00, 3, 'active', v_user_id)
     ON CONFLICT (branch_id, property_code) DO NOTHING;
 
-    -- Fetch actual property IDs (in case they already exist)
     SELECT id INTO v_prop_hazina FROM public.properties WHERE property_code = 'HAZINA FLATS' AND branch_id = v_branch_id;
     SELECT id INTO v_prop_immanuel FROM public.properties WHERE property_code = 'IMMANUEL APARTMENT' AND branch_id = v_branch_id;
 
-
-    -- 8. Seed 20 Representative Units for Hazina Flats & Immanuel Apartments
     INSERT INTO public.units (
         company_id, branch_id, property_id, unit_number, unit_category, unit_type, floor_level,
         base_rent_rate, rent_deposit_rate, water_deposit_rate, electricity_deposit_rate, service_charge_rate, garbage_fee_rate,
         water_meter_no, electricity_meter_no, is_occupied, status, created_by
     ) VALUES
-        -- Hazina Flats Units (Bedsitters & 1 Bedrooms)
+
         (v_company_id, v_branch_id, v_prop_hazina, 'B1', 'BD', 'residential', 'Ground Floor', 6500.00, 6500.00, 2500.00, 0.00, 100.00, 100.00, 'WM-HZ-001', 'KPLC-890214', TRUE, 'occupied', v_user_id),
         (v_company_id, v_branch_id, v_prop_hazina, 'B2', 'BD', 'residential', 'Ground Floor', 6500.00, 6500.00, 2500.00, 0.00, 100.00, 100.00, 'WM-HZ-002', 'KPLC-890215', TRUE, 'occupied', v_user_id),
         (v_company_id, v_branch_id, v_prop_hazina, 'B3', 'BD', 'residential', 'Ground Floor', 6500.00, 6500.00, 2500.00, 0.00, 100.00, 100.00, 'WM-HZ-003', 'KPLC-890216', TRUE, 'occupied', v_user_id),
@@ -173,8 +153,7 @@ BEGIN
         (v_company_id, v_branch_id, v_prop_hazina, '3', '1B', 'residential', '2nd Floor', 9000.00, 9000.00, 3000.00, 0.00, 200.00, 100.00, 'WM-HZ-013', 'KPLC-890226', FALSE, 'vacant', v_user_id),
         (v_company_id, v_branch_id, v_prop_hazina, '4', '1B', 'residential', '2nd Floor', 9000.00, 9000.00, 3000.00, 0.00, 200.00, 100.00, 'WM-HZ-014', 'KPLC-890227', FALSE, 'vacant', v_user_id),
         (v_company_id, v_branch_id, v_prop_hazina, '5', '1B', 'residential', '2nd Floor', 9000.00, 9000.00, 3000.00, 0.00, 200.00, 100.00, 'WM-HZ-015', 'KPLC-890228', FALSE, 'vacant', v_user_id),
-        
-        -- Immanuel Apartments Units (2 Bedrooms & 3 Bedrooms)
+
         (v_company_id, v_branch_id, v_prop_immanuel, 'A1', '2B', 'residential', 'Ground Floor', 16000.00, 16000.00, 3000.00, 0.00, 500.00, 150.00, 'WM-IMM-001', 'KPLC-920101', TRUE, 'occupied', v_user_id),
         (v_company_id, v_branch_id, v_prop_immanuel, 'A2', '2B', 'residential', 'Ground Floor', 16000.00, 16000.00, 3000.00, 0.00, 500.00, 150.00, 'WM-IMM-002', 'KPLC-920102', TRUE, 'occupied', v_user_id),
         (v_company_id, v_branch_id, v_prop_immanuel, 'B1', '2B', 'residential', '1st Floor', 16000.00, 16000.00, 3000.00, 0.00, 500.00, 150.00, 'WM-IMM-003', 'KPLC-920103', TRUE, 'occupied', v_user_id),
@@ -182,7 +161,6 @@ BEGIN
         (v_company_id, v_branch_id, v_prop_immanuel, 'C1', '3B', 'residential', '2nd Floor', 22000.00, 22000.00, 4000.00, 0.00, 700.00, 200.00, 'WM-IMM-005', 'KPLC-920105', FALSE, 'vacant', v_user_id)
     ON CONFLICT (property_id, unit_number) DO NOTHING;
 
-    -- 9. Seed 6 Representative Tenants from Thika DB
     INSERT INTO public.tenants (
         company_id, branch_id, tenant_no, full_name, id_or_passport_no, phone, email,
         workplace, work_contact, next_of_kin_name, next_of_kin_phone, next_of_kin_relation,
@@ -196,7 +174,6 @@ BEGIN
         (v_company_id, v_branch_id, 'T00362', 'Lucy Wairimu Gathong''a', '32910482', '+254728901234', 'lucy.gathonga@gmail.com', 'Broadway Bakeries Ltd', '+254700666777', 'Peter Gathong''a', '+254733222111', 'Brother', 'active', '2023-03-02', v_user_id)
     ON CONFLICT (company_id, tenant_no) DO NOTHING;
 
-    -- 10. Seed Representative Active Leases for Occupied Units
     INSERT INTO public.leases (
         company_id, branch_id, property_id, unit_id, tenant_id,
         lease_no, start_date, end_date, rent_pay_day, agreed_rent,
@@ -242,14 +219,12 @@ BEGIN
     WHERE u.property_id = v_prop_immanuel AND u.unit_number = 'A1' AND t.tenant_no = 'T01364'
     ON CONFLICT DO NOTHING;
 
-    -- 11. Seed Accounting Period for Current Month
     INSERT INTO public.accounting_periods (
         company_id, branch_id, month, year, period_name, status, vat_rate, created_by
     ) VALUES
         (v_company_id, v_branch_id, 10, 2026, 'October 2026', 'open', 16.00, v_user_id)
     ON CONFLICT DO NOTHING;
 
-    -- 12. Seed Financial Ledger Transactions & Tenant Bills
     SELECT id INTO v_pid FROM public.accounting_periods WHERE company_id = v_company_id AND month = 10 AND year = 2026 LIMIT 1;
     SELECT id INTO v_c_rent FROM public.charge_types WHERE company_id = v_company_id AND code = '001';
     SELECT id INTO v_c_water FROM public.charge_types WHERE company_id = v_company_id AND code = '002';
@@ -261,7 +236,7 @@ BEGIN
     SELECT id, property_id, unit_id, tenant_id INTO v_lease_imm, v_prop_immanuel, v_unit_a1, v_t_miriam FROM public.leases WHERE lease_no = 'LS-IMM-001' LIMIT 1;
 
     IF v_lease_hz1 IS NOT NULL THEN
-        -- September Billing & Payment for Byrum
+
         INSERT INTO public.financial_transactions (
             company_id, branch_id, property_id, unit_id, tenant_id, lease_id, charge_type_id, period_id,
             entry_type, reference_no, transaction_date, month, year, debit_amount, credit_amount, comments, is_confirmed, created_by
@@ -269,13 +244,12 @@ BEGIN
             (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_rent, v_pid, 'invoice_charge', 'INV-2026-09-001', '2026-09-01', 9, 2026, 6500.00, 0.00, 'September 2026 Rent - Hazina B1', TRUE, v_user_id),
             (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_garbage, v_pid, 'invoice_charge', 'INV-2026-09-002', '2026-09-01', 9, 2026, 100.00, 0.00, 'September 2026 Garbage Fee', TRUE, v_user_id),
             (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_rent, v_pid, 'payment_receipt', 'REC-2026-09-041', '2026-09-05', 9, 2026, 0.00, 6600.00, 'September Rent Payment via M-Pesa (Ref: QJD8291048)', TRUE, v_user_id),
-            -- October Invoices (Outstanding)
+
             (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_rent, v_pid, 'invoice_charge', 'INV-2026-10-001', '2026-10-01', 10, 2026, 6500.00, 0.00, 'October 2026 Rent - Hazina B1', TRUE, v_user_id),
             (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_garbage, v_pid, 'invoice_charge', 'INV-2026-10-002', '2026-10-01', 10, 2026, 100.00, 0.00, 'October 2026 Garbage Sanitation Fee', TRUE, v_user_id),
             (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_water, v_pid, 'invoice_charge', 'INV-2026-10-003', '2026-10-03', 10, 2026, 900.00, 0.00, 'Water Consumption: Meter WM-HZ-001 (6 Units @ KES 150)', TRUE, v_user_id)
         ON CONFLICT DO NOTHING;
 
-        -- October Tenant Bill Summary for Byrum
         INSERT INTO public.tenant_bill_summaries (
             company_id, branch_id, property_id, unit_id, tenant_id, lease_id, period_id,
             month, year, opening_arrears_balance, total_billed_amount, total_paid_amount, closing_balance, is_settled, created_by
@@ -285,7 +259,7 @@ BEGIN
     END IF;
 
     IF v_lease_hz2 IS NOT NULL THEN
-        -- October Invoices for Job Mugo Kahari (Hazina B2)
+
         INSERT INTO public.financial_transactions (
             company_id, branch_id, property_id, unit_id, tenant_id, lease_id, charge_type_id, period_id,
             entry_type, reference_no, transaction_date, month, year, debit_amount, credit_amount, comments, is_confirmed, created_by
@@ -303,7 +277,7 @@ BEGIN
     END IF;
 
     IF v_lease_imm IS NOT NULL THEN
-        -- October Invoices for Miriam Delight Wangui (Immanuel A1)
+
         INSERT INTO public.financial_transactions (
             company_id, branch_id, property_id, unit_id, tenant_id, lease_id, charge_type_id, period_id,
             entry_type, reference_no, transaction_date, month, year, debit_amount, credit_amount, comments, is_confirmed, created_by
@@ -321,7 +295,6 @@ BEGIN
         ON CONFLICT DO NOTHING;
     END IF;
 
-    -- 13. Seed Sample Historical Communication Logs
     INSERT INTO public.communication_logs (
         company_id, branch_id, tenant_id, channel, recipient_destination, message_type, message_content,
         status, external_gateway_id, sent_at, created_by
@@ -335,4 +308,3 @@ BEGIN
 END;
 
 $$;
-

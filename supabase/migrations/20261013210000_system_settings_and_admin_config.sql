@@ -1,13 +1,8 @@
--- Migration: 20261013210000_system_settings_and_admin_config.sql
--- Domain 8: System Administration, Enterprise Settings, M-Pesa Integration, and Approval Workflows
--- Reverse-engineered from legacy IIS Propwings system in C:\inetpub\wwwroot\Propwings
-
 CREATE TABLE IF NOT EXISTS public.system_settings (
     id                                  UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id                          UUID            NOT NULL REFERENCES public.companies(id) ON DELETE RESTRICT,
     branch_id                           UUID            NOT NULL,
 
-    -- Company Identity & Statutory (CompInfo.aspx)
     slogan                              TEXT            DEFAULT 'Properties. People. Performance.',
     kra_pin                             TEXT            DEFAULT 'P051283921A',
     nssf_no                             TEXT            DEFAULT 'NSSF-492019',
@@ -15,7 +10,6 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
     postal_code                         TEXT            DEFAULT '01000',
     logo_url                            TEXT,
 
-    -- M-Pesa C2B Paybill & B2C Integration (M_Paybill.aspx)
     paybill_number                      TEXT            DEFAULT '522522, 400200',
     mpesa_shortcode                     TEXT            DEFAULT '522522',
     mpesa_consumer_key                  TEXT,
@@ -23,7 +17,6 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
     mpesa_passkey                       TEXT,
     mpesa_b2c_phone                     TEXT            DEFAULT '+254712345678',
 
-    -- Notification & SMTP Gateway Setup (Settings.aspx -> Notifications)
     smtp_host                           TEXT            DEFAULT 'mail.propwings.co.ke',
     smtp_port                           INTEGER         DEFAULT 465,
     smtp_username                       TEXT            DEFAULT 'updates@propwings.co.ke',
@@ -32,19 +25,16 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
     smtp_alert_emails                   TEXT            DEFAULT 'admin@promatrix.co.ke, accounts@promatrix.co.ke',
     smtp_use_ssl                        BOOLEAN         DEFAULT TRUE,
 
-    -- Bulk SMS Gateway Setup (BulkSMS.aspx & Route_SMS)
     sms_sender_id                       TEXT            DEFAULT 'PROPMATRIX',
     sms_api_key                         TEXT,
     sms_gateway_url                     TEXT            DEFAULT 'https://api.mobilesasa.com/v1/send/',
 
-    -- Approval Settings & Maker-Checker Governance (ApprovalSettings.aspx)
     approval_payment_receipt_limit      NUMERIC(14, 2)  NOT NULL DEFAULT 100000.00,
     approval_expense_voucher_limit      NUMERIC(14, 2)  NOT NULL DEFAULT 50000.00,
     approval_landlord_remittance_limit  NUMERIC(14, 2)  NOT NULL DEFAULT 200000.00,
     approval_deposit_refund_limit       NUMERIC(14, 2)  NOT NULL DEFAULT 50000.00,
     require_maker_checker               BOOLEAN         NOT NULL DEFAULT TRUE,
 
-    -- Audit
     created_at                          TIMESTAMPTZ     NOT NULL DEFAULT now(),
     updated_at                          TIMESTAMPTZ     NOT NULL DEFAULT now(),
     created_by                          UUID,
@@ -60,7 +50,6 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
 CREATE TRIGGER trg_system_settings_updated_at BEFORE UPDATE ON public.system_settings
     FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- RLS Enforcement
 ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.system_settings FORCE ROW LEVEL SECURITY;
 
@@ -80,7 +69,6 @@ CREATE POLICY "system_settings_update_branch_members" ON public.system_settings
     USING (branch_id IN (SELECT public.get_my_branch_ids()) AND company_id IN (SELECT public.get_my_company_ids()))
     WITH CHECK (branch_id IN (SELECT public.get_my_branch_ids()) AND company_id IN (SELECT public.get_my_company_ids()));
 
--- Seed Default Settings for Active Company & Branch
 DO $$
 DECLARE
     v_comp_id UUID;

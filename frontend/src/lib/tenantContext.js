@@ -12,7 +12,6 @@ export async function getTenantContext() {
     throw new Error('Not authenticated')
   }
 
-  // 1. Fetch active branch membership for this user (sequential, avoids compound FK ambiguous embed)
   const { data: memberships, error: membershipError } = await supabase
     .from('branch_memberships')
     .select('company_id, branch_id')
@@ -31,7 +30,6 @@ export async function getTenantContext() {
 
   const mem = memberships[0]
 
-  // 2. Fetch branch and company details cleanly in parallel
   const [branchRes, companyRes] = await Promise.all([
     supabase
       .from('branches')

@@ -1,6 +1,3 @@
--- Migration: 20261013200100_seed_sample_employees.sql
--- Seed 3 sample real estate staff records for HR & Payroll testing
-
 DO $$
 DECLARE
     v_company_id UUID;
@@ -10,10 +7,10 @@ BEGIN
     SELECT id INTO v_branch_id FROM public.branches WHERE company_id = v_company_id LIMIT 1;
 
     IF v_company_id IS NOT NULL AND v_branch_id IS NOT NULL THEN
-        -- Insert 3 sample staff members
+
         INSERT INTO public.employees (
             company_id, branch_id, employee_no, first_name, last_name, id_number, kra_pin, nssf_no, nhif_no, phone, email, job_title, basic_salary, hire_date, status
-        ) VALUES 
+        ) VALUES
         (
             v_company_id, v_branch_id, 'EMP-001', 'Cornelius', 'Kibet', '28491028', 'A019283746Z', 'NSSF-928172', 'NHIF-1029384', '+254712345678', 'cornelius.kibet@promatrix.co.ke', 'Property Manager', 85000.00, '2023-01-15', 'active'
         ),

@@ -39,7 +39,6 @@ export default function Settings() {
   const [errorMsg, setErrorMsg] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
 
-  // 1. Company Profile & Statutory State (CompInfo.aspx)
   const [companyForm, setCompanyForm] = useState({
     name: 'ProMatrix Real Estate Agency',
     slogan: 'Properties. People. Performance.',
@@ -56,7 +55,6 @@ export default function Settings() {
     time_zone: 'Africa/Nairobi',
   })
 
-  // 2. M-Pesa Gateway State (M_Paybill.aspx)
   const [mpesaForm, setMpesaForm] = useState({
     paybill_number: '522522, 400200',
     mpesa_shortcode: '522522',
@@ -66,7 +64,6 @@ export default function Settings() {
     mpesa_b2c_phone: '+254712345678',
   })
 
-  // 3. Notification & SMS State (Settings.aspx -> Notifications & Route_SMS)
   const [notificationForm, setNotificationForm] = useState({
     smtp_host: 'mail.propwings.co.ke',
     smtp_port: 465,
@@ -80,7 +77,6 @@ export default function Settings() {
     sms_gateway_url: 'https://api.mobilesasa.com/v1/send/',
   })
 
-  // 4. Approval Workflows State (ApprovalSettings.aspx)
   const [approvalForm, setApprovalForm] = useState({
     approval_payment_receipt_limit: 100000,
     approval_expense_voucher_limit: 50000,
@@ -89,7 +85,6 @@ export default function Settings() {
     require_maker_checker: true,
   })
 
-  // 5. User Roles & Permission Matrix State (Settings.aspx -> Userrights)
   const [selectedRole, setSelectedRole] = useState('property_manager')
   const [rolesList, setRolesList] = useState([
     { id: '1', role_name: 'Company Super Admin', role_slug: 'super_admin' },
@@ -154,7 +149,6 @@ export default function Settings() {
 
   const [permissionsMatrix, setPermissionsMatrix] = useState(initialPermissionsMatrix)
 
-  // 6. System Users List (Systemusers.aspx)
   const [usersList, setUsersList] = useState([
     {
       id: '1',
@@ -198,7 +192,6 @@ export default function Settings() {
     },
   ])
 
-  // 7. Audit Trail State (AuditTrail.aspx)
   const [auditLogs, setAuditLogs] = useState([
     {
       id: '1',
@@ -247,7 +240,6 @@ export default function Settings() {
     },
   ])
 
-  // Load Settings from Supabase
   const loadSettings = async () => {
     setLoading(true)
     setErrorMsg('')
@@ -255,7 +247,6 @@ export default function Settings() {
       const tenant = await getTenantContext()
       setContext(tenant)
 
-      // Query settings from system_settings
       const { data: setRes, error: setErr } = await supabase
         .from('system_settings')
         .select('*')
@@ -310,7 +301,6 @@ export default function Settings() {
     loadSettings()
   }, [])
 
-  // Save Settings to Supabase
   const handleSaveSettings = async () => {
     setSaving(true)
     setErrorMsg('')
@@ -357,7 +347,6 @@ export default function Settings() {
     }
   }
 
-  // Toggle permission in matrix
   const handleTogglePermission = (moduleKey, permKey) => {
     setPermissionsMatrix((prev) => {
       const currentVal = prev[selectedRole]?.[moduleKey]?.[permKey]
@@ -397,7 +386,7 @@ export default function Settings() {
 
   return (
     <div className="w-full px-8 py-6 space-y-6 bg-surface-950 text-surface-100 min-h-full">
-      {/* Header Breadcrumb & Actions */}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-mono text-brand-400 mb-1">
@@ -447,7 +436,6 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Feedback Alerts */}
       {errorMsg && (
         <div className="p-4 rounded-2xl bg-coral-950/30 border border-coral-500/30 text-coral-300 text-xs flex items-start gap-3 shadow-card">
           <AlertCircle className="h-4 w-4 text-coral-400 shrink-0 mt-0.5" />
@@ -474,7 +462,6 @@ export default function Settings() {
         </div>
       )}
 
-      {/* Tab Navigation Pill Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-surface-850/80">
         {tabs.map((tab) => {
           const Icon = tab.icon
@@ -496,7 +483,6 @@ export default function Settings() {
         })}
       </div>
 
-      {/* ================= TAB 1: COMPANY PROFILE (CompInfo.aspx) ================= */}
       {activeTab === 'company' && (
         <div className="bg-surface-900/60 border border-surface-800/80 rounded-3xl p-6 shadow-card space-y-6">
           <div className="border-b border-surface-800 pb-4">
@@ -613,7 +599,6 @@ export default function Settings() {
         </div>
       )}
 
-      {/* ================= TAB 2: ROLES & PERMISSIONS MATRIX (Settings.aspx -> Userrights) ================= */}
       {activeTab === 'roles' && (
         <div className="bg-surface-900/60 border border-surface-800/80 rounded-3xl p-6 shadow-card space-y-6">
           <div className="border-b border-surface-800 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -643,7 +628,6 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* Matrix Data Table */}
           <div className="overflow-x-auto rounded-2xl border border-surface-800/80">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
@@ -693,7 +677,6 @@ export default function Settings() {
         </div>
       )}
 
-      {/* ================= TAB 3: SYSTEM USERS (Systemusers.aspx) ================= */}
       {activeTab === 'users' && (
         <div className="bg-surface-900/60 border border-surface-800/80 rounded-3xl p-6 shadow-card space-y-6">
           <div className="border-b border-surface-800 pb-4 flex items-center justify-between">
@@ -763,7 +746,6 @@ export default function Settings() {
         </div>
       )}
 
-      {/* ================= TAB 4: M-PESA INTEGRATION (M_Paybill.aspx) ================= */}
       {activeTab === 'mpesa' && (
         <div className="bg-surface-900/60 border border-surface-800/80 rounded-3xl p-6 shadow-card space-y-6">
           <div className="border-b border-surface-800 pb-4">
@@ -834,7 +816,6 @@ export default function Settings() {
         </div>
       )}
 
-      {/* ================= TAB 5: NOTIFICATIONS & SMS (Settings.aspx & Route_SMS) ================= */}
       {activeTab === 'notifications' && (
         <div className="bg-surface-900/60 border border-surface-800/80 rounded-3xl p-6 shadow-card space-y-6">
           <div className="border-b border-surface-800 pb-4">
@@ -900,7 +881,6 @@ export default function Settings() {
         </div>
       )}
 
-      {/* ================= TAB 6: APPROVAL WORKFLOWS (ApprovalSettings.aspx) ================= */}
       {activeTab === 'approvals' && (
         <div className="bg-surface-900/60 border border-surface-800/80 rounded-3xl p-6 shadow-card space-y-6">
           <div className="border-b border-surface-800 pb-4">
@@ -986,7 +966,6 @@ export default function Settings() {
         </div>
       )}
 
-      {/* ================= TAB 7: AUDIT TRAIL (AuditTrail.aspx) ================= */}
       {activeTab === 'audit' && (
         <div className="bg-surface-900/60 border border-surface-800/80 rounded-3xl p-6 shadow-card space-y-6">
           <div className="border-b border-surface-800 pb-4">

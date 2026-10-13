@@ -1,23 +1,16 @@
--- Migration: 20261013200000_hr_payroll_module.sql
--- Domain 7: HR, Staff Registry & Statutory Payroll Module
--- Multi-tenant compound foreign keys & Row-Level Security via get_my_branch_ids()
-
--- ── 1. Employees (Staff Registry) ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.employees (
     id                      UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id              UUID            NOT NULL REFERENCES public.companies(id) ON DELETE RESTRICT,
     branch_id               UUID            NOT NULL,
 
-    -- Code & KYC Identity
-    employee_no             TEXT            NOT NULL,                         -- e.g. 'EMP-001'
+    employee_no             TEXT            NOT NULL,
     first_name              TEXT            NOT NULL CHECK (char_length(trim(first_name)) > 0),
     last_name               TEXT            NOT NULL CHECK (char_length(trim(last_name)) > 0),
-    id_number               TEXT,                                            -- National ID / Passport
-    kra_pin                 TEXT,                                            -- KRA Tax PIN
-    nssf_no                 TEXT,                                            -- NSSF Member Number
-    nhif_no                 TEXT,                                            -- NHIF Member Number
+    id_number               TEXT,
+    kra_pin                 TEXT,
+    nssf_no                 TEXT,
+    nhif_no                 TEXT,
 
-    -- Contact & Employment Details
     phone                   TEXT            NOT NULL,
     email                   TEXT,
     job_title               TEXT            NOT NULL DEFAULT 'Property Caretaker',
@@ -25,7 +18,6 @@ CREATE TABLE IF NOT EXISTS public.employees (
     hire_date               DATE            NOT NULL DEFAULT CURRENT_DATE,
     status                  TEXT            NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'terminated', 'on_leave')),
 
-    -- Audit
     created_at              TIMESTAMPTZ     NOT NULL DEFAULT now(),
     updated_at              TIMESTAMPTZ     NOT NULL DEFAULT now(),
     created_by              UUID,
@@ -46,25 +38,19 @@ CREATE TRIGGER trg_employees_updated_at BEFORE UPDATE ON public.employees
 CREATE INDEX IF NOT EXISTS idx_employees_company_branch ON public.employees (company_id, branch_id);
 CREATE INDEX IF NOT EXISTS idx_employees_status ON public.employees (status);
 
-
--- ── 2. Payroll Runs ─────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.payroll_runs (
     id                      UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id              UUID            NOT NULL REFERENCES public.companies(id) ON DELETE RESTRICT,
     branch_id               UUID            NOT NULL,
 
-    -- Payroll Period
     period_month            SMALLINT        NOT NULL CHECK (period_month BETWEEN 1 AND 12),
     period_year             SMALLINT        NOT NULL CHECK (period_year >= 2000),
 
-    -- Totals
     total_gross             NUMERIC(14, 2)  NOT NULL DEFAULT 0.00 CHECK (total_gross >= 0),
     total_net               NUMERIC(14, 2)  NOT NULL DEFAULT 0.00 CHECK (total_net >= 0),
 
-    -- Workflow Status
     status                  TEXT            NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'approved', 'paid')),
 
-    -- Audit
     created_at              TIMESTAMPTZ     NOT NULL DEFAULT now(),
     updated_at              TIMESTAMPTZ     NOT NULL DEFAULT now(),
     created_by              UUID,
@@ -84,8 +70,6 @@ CREATE TRIGGER trg_payroll_runs_updated_at BEFORE UPDATE ON public.payroll_runs
 
 CREATE INDEX IF NOT EXISTS idx_payroll_runs_company_branch ON public.payroll_runs (company_id, branch_id);
 
-
--- ── 3. Payslips (Individual Line Items) ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.payslips (
     id                      UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id              UUID            NOT NULL REFERENCES public.companies(id) ON DELETE RESTRICT,
@@ -93,18 +77,15 @@ CREATE TABLE IF NOT EXISTS public.payslips (
     payroll_run_id          UUID            NOT NULL,
     employee_id             UUID            NOT NULL,
 
-    -- Remuneration Breakdown
     basic_salary            NUMERIC(14, 2)  NOT NULL DEFAULT 0.00 CHECK (basic_salary >= 0),
     allowances              NUMERIC(14, 2)  NOT NULL DEFAULT 0.00 CHECK (allowances >= 0),
     gross_pay               NUMERIC(14, 2)  NOT NULL DEFAULT 0.00 CHECK (gross_pay >= 0),
 
-    -- Statutory Deductions (Kenya Tax / Social Security Model)
     paye_tax                NUMERIC(14, 2)  NOT NULL DEFAULT 0.00 CHECK (paye_tax >= 0),
     nhif_deduction          NUMERIC(14, 2)  NOT NULL DEFAULT 0.00 CHECK (nhif_deduction >= 0),
     nssf_deduction          NUMERIC(14, 2)  NOT NULL DEFAULT 0.00 CHECK (nssf_deduction >= 0),
     net_pay                 NUMERIC(14, 2)  NOT NULL DEFAULT 0.00 CHECK (net_pay >= 0),
 
-    -- Audit
     created_at              TIMESTAMPTZ     NOT NULL DEFAULT now(),
     updated_at              TIMESTAMPTZ     NOT NULL DEFAULT now(),
     created_by              UUID,
@@ -132,8 +113,6 @@ CREATE INDEX IF NOT EXISTS idx_payslips_company_branch ON public.payslips (compa
 CREATE INDEX IF NOT EXISTS idx_payslips_run ON public.payslips (payroll_run_id);
 CREATE INDEX IF NOT EXISTS idx_payslips_employee ON public.payslips (employee_id);
 
-
--- ── 4. Row-Level Security (RLS) Multi-Tenant Policies ──────────────────────
 ALTER TABLE public.employees     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payroll_runs  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payslips      ENABLE ROW LEVEL SECURITY;
@@ -142,7 +121,6 @@ ALTER TABLE public.employees     FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.payroll_runs  FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.payslips      FORCE ROW LEVEL SECURITY;
 
--- Apply Branch-Scoped Policies using get_my_branch_ids() and get_my_company_ids()
 DO $$
 DECLARE
     tbl text;

@@ -91,9 +91,9 @@ export default function Sidebar({ activeContext }) {
 
   return (
     <aside className="w-64 flex-shrink-0 h-full bg-[#0b1329] text-slate-300 flex flex-col border-r border-slate-800/80 select-none z-30">
-      {/* Brand Header */}
+
       <div className="px-6 py-5 flex items-center gap-3 border-b border-slate-850/50">
-        {/* Isometric 3D Cube Icon */}
+
         <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 via-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 shrink-0">
           <Boxes className="h-5 w-5 text-white" />
         </div>
@@ -107,7 +107,6 @@ export default function Sidebar({ activeContext }) {
         </div>
       </div>
 
-      {/* Navigation Menu Items */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const active = isActive(item.path)
@@ -129,12 +128,11 @@ export default function Sidebar({ activeContext }) {
         })}
       </nav>
 
-      {/* Smarter Property Management Promo Block */}
       <div className="p-3 mt-auto">
         <div className="p-4 rounded-2xl bg-gradient-to-b from-[#132042] via-[#0f1a36] to-[#0a1226] border border-blue-900/40 text-white relative overflow-hidden shadow-xl">
-          {/* Subtle wave gradient background */}
+
           <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-blue-500/10 rounded-full blur-xl pointer-events-none" />
-          
+
           <div className="h-8 w-8 rounded-xl bg-blue-600/25 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-3">
             <BarChart3 className="h-4 w-4" />
           </div>

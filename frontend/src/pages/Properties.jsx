@@ -35,7 +35,6 @@ export default function Properties() {
   const [errorMsg, setErrorMsg] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
 
-  // Form State
   const initialFormState = {
     property_code: '',
     name: '',
@@ -66,7 +65,6 @@ export default function Properties() {
       const tenant = await getTenantContext()
       setContext(tenant)
 
-      // Fetch landlords list for dropdown
       const { data: landlordsData, error: lError } = await supabase
         .from('landlords')
         .select('id, landlord_no, surname, other_names')
@@ -77,7 +75,6 @@ export default function Properties() {
       if (lError) throw lError
       setLandlordsList(landlordsData || [])
 
-      // Fetch properties with landlord relation
       const { data: propData, error: pError } = await supabase
         .from('properties')
         .select(`
@@ -195,7 +192,7 @@ export default function Properties() {
       <Navbar activeContext={context} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Header Breadcrumb & Actions */}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-brand-400 mb-1">
@@ -239,7 +236,6 @@ export default function Properties() {
           </div>
         </div>
 
-        {/* Feedback Alerts */}
         {errorMsg && (
           <div className="p-4 rounded-2xl bg-coral-950/30 border border-coral-500/30 text-coral-300 text-xs flex items-start gap-3 shadow-card">
             <AlertCircle className="h-4 w-4 text-coral-400 shrink-0 mt-0.5" />
@@ -266,7 +262,6 @@ export default function Properties() {
           </div>
         )}
 
-        {/* Filter & Search Bar */}
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-surface-900/60 p-4 rounded-2xl border border-surface-800/80 shadow-card">
           <div className="relative w-full sm:w-96">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-surface-500" />
@@ -309,7 +304,6 @@ export default function Properties() {
           </div>
         </div>
 
-        {/* Properties Data Grid */}
         <div className="bg-surface-900/60 border border-surface-800/80 rounded-3xl overflow-hidden shadow-card">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
@@ -433,7 +427,6 @@ export default function Properties() {
         </div>
       </main>
 
-      {/* Registration Modal Dialog */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/75 backdrop-blur-md overflow-y-auto">
           <div className="bg-surface-900 border border-surface-800 rounded-3xl w-full max-w-2xl my-8 overflow-hidden shadow-elevated flex flex-col">
@@ -458,7 +451,7 @@ export default function Properties() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-5 flex-1 overflow-y-auto max-h-[75vh]">
-              {/* Section 1: Core Property Details */}
+
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-400 font-mono mb-3">
                   1. Property Identity & Ownership
@@ -576,7 +569,6 @@ export default function Properties() {
                 </div>
               </div>
 
-              {/* Section 2: Financial Terms & Commission */}
               <div className="pt-3 border-t border-surface-800">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-400 font-mono mb-3">
                   2. Commission & Remittance Rules
@@ -645,7 +637,6 @@ export default function Properties() {
                 </div>
               </div>
 
-              {/* Section 3: Operations & Caretaker */}
               <div className="pt-3 border-t border-surface-800">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-400 font-mono mb-3">
                   3. Caretaker, Floors & Parking
@@ -724,7 +715,6 @@ export default function Properties() {
                 </div>
               </div>
 
-              {/* Multi-Tenant Audit Notice */}
               <div className="p-3.5 rounded-2xl bg-brand-950/40 border border-brand-500/20 text-xs text-brand-300 flex items-center gap-2.5">
                 <ShieldCheck className="h-4 w-4 text-brand-400 shrink-0" />
                 <span>
@@ -732,7 +722,6 @@ export default function Properties() {
                 </span>
               </div>
 
-              {/* Submit Buttons */}
               <div className="pt-3 border-t border-surface-800 flex items-center justify-end gap-3">
                 <button
                   type="button"

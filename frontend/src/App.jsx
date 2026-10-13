@@ -22,13 +22,12 @@ export default function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // 1. Get initial session
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setLoading(false)
     })
 
-    // 2. Listen for auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -53,13 +52,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Auth Route */}
+
         <Route
           path="/auth"
           element={session ? <Navigate to="/dashboard" replace /> : <Auth />}
         />
 
-        {/* Protected App Routes wrapped in Full-Bleed Layout */}
         <Route element={session ? <Layout session={session} /> : <Navigate to="/auth" replace />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/properties" element={<Properties />} />
@@ -72,11 +70,9 @@ export default function App() {
           <Route path="/statements" element={<TenantStatements />} />
           <Route path="/communications" element={<Communications />} />
 
-          {/* Domain 7: HR & Payroll Routes */}
           <Route path="/employees" element={<Employees />} />
           <Route path="/payroll" element={<Payroll />} />
 
-          {/* Nav aliases to ensure all sidebar items resolve cleanly */}
           <Route path="/maintenance" element={<MeterReadings />} />
           <Route path="/service-charges" element={<TenantStatements />} />
           <Route path="/reports" element={<TenantStatements />} />
@@ -86,7 +82,6 @@ export default function App() {
           <Route path="/audit-trail" element={<Settings />} />
         </Route>
 
-        {/* Redirect Root and Catch-all */}
         <Route
           path="/"
           element={session ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth" replace />}

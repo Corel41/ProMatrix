@@ -44,7 +44,6 @@ export default function Dashboard() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Live Metrics State
   const [metrics, setMetrics] = useState({
     totalProperties: 12,
     activeTenants: 86,
@@ -55,10 +54,8 @@ export default function Dashboard() {
     vacantUnits: 11,
   })
 
-  // Live Properties List
   const [propertiesList, setPropertiesList] = useState([])
 
-  // Live Financial Summaries
   const [recentFinancials, setRecentFinancials] = useState([
     {
       title: 'Rent Collected (Oct)',
@@ -94,7 +91,6 @@ export default function Dashboard() {
     },
   ])
 
-  // Bar Chart Data: Dual Bars (Collected vs Expected)
   const rentCollectionData = [
     { month: 'Jan', Collected: 1100000, Expected: 1350000 },
     { month: 'Feb', Collected: 1100000, Expected: 1300000 },
@@ -107,7 +103,6 @@ export default function Dashboard() {
     { month: 'Oct', Collected: 950000, Expected: 1300000 },
   ]
 
-  // Donut Chart Data
   const occupancyPieData = [
     { name: 'Occupied', value: 109, color: '#059669' },
     { name: 'Vacant', value: 11, color: '#e2e8f0' },
@@ -130,7 +125,6 @@ export default function Dashboard() {
         const tenant = await getTenantContext()
         setContext(tenant)
 
-        // Query Live Supabase Data with strict multi-tenant isolation
         const [propRes, tenantRes, unitRes, txRes, billRes] = await Promise.all([
           supabase
             .from('properties')
@@ -160,7 +154,6 @@ export default function Dashboard() {
         const liveTx = txRes.data || []
         const liveBills = billRes.data || []
 
-        // Compute Live Metrics with robust template fallbacks
         const propCount = liveProperties.length > 0 ? liveProperties.length : 12
         const tenantCount = liveTenants.length > 0 ? liveTenants.length : 86
         const totalUnits = liveUnits.length > 0 ? liveUnits.length : 120
@@ -187,7 +180,6 @@ export default function Dashboard() {
           vacantUnits: vacant,
         })
 
-        // Map Properties Table items (combining live properties with template design)
         const templateTable = [
           {
             name: 'Mowlem Heights',
@@ -248,7 +240,6 @@ export default function Dashboard() {
     loadDashboardData()
   }, [navigate])
 
-  // Dynamic greeting based on current local hour
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
   const userName =
@@ -257,7 +248,6 @@ export default function Dashboard() {
     'Cornelius'
   const firstName = userName.split(' ')[0]
 
-  // Formatted date string (e.g. Tue, 13 Oct 2026)
   const today = new Date()
   const dateFormatted = today.toLocaleDateString('en-GB', {
     weekday: 'short',
@@ -266,19 +256,17 @@ export default function Dashboard() {
     year: 'numeric',
   })
 
-  // Format currency for Y-axis on charts
   const formatYAxis = (val) => {
     if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`
     if (val >= 1000) return `${Math.round(val / 1000)}K`
     return val
   }
 
-  // Format currency tooltip
   const formatTooltipCurrency = (value) => [`KSh ${Number(value).toLocaleString()}`, '']
 
   return (
     <div className="w-full px-8 py-6 space-y-6 bg-[#f8fafc]">
-      {/* 1. Hero Section: Greeting & Date Pill */}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -295,13 +283,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 2. Main Enterprise Layout Grid: Left Zones (75%) & Right Rail (25%) */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-        {/* ================= LEFT MAIN COLUMN (8 cols on XL, 9 cols on 2XL) ================= */}
+
         <div className="xl:col-span-8 2xl:col-span-9 space-y-6">
-          {/* Top Row: 4 Metric Cards */}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Card 1: Total Properties */}
+
             <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
               <div>
                 <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -317,7 +304,6 @@ export default function Dashboard() {
               </p>
             </div>
 
-            {/* Card 2: Active Tenants */}
             <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
               <div>
                 <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -333,7 +319,6 @@ export default function Dashboard() {
               </p>
             </div>
 
-            {/* Card 3: Rent Collected (YTD) */}
             <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
               <div>
                 <div className="h-10 w-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
@@ -349,7 +334,6 @@ export default function Dashboard() {
               </p>
             </div>
 
-            {/* Card 4: Outstanding Rent */}
             <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
               <div>
                 <div className="h-10 w-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
@@ -366,9 +350,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Middle Row: Charts Zone */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Chart 1: Rent Collection Overview (Bar Chart, 7 cols) */}
+
             <div className="lg:col-span-7 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-slate-900">Rent Collection Overview</h3>
@@ -418,13 +401,11 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Chart 2: Occupancy Rate (Donut Chart, 5 cols) */}
             <div className="lg:col-span-5 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-bold text-slate-900">Occupancy Rate</h3>
               </div>
 
-              {/* Donut Chart with Centered Occupancy Percentage */}
               <div className="relative h-48 flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -444,7 +425,6 @@ export default function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
 
-                {/* Center Badge */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-2xl font-bold text-slate-900 font-sans tracking-tight">
                     {metrics.occupancyRate}%
@@ -453,7 +433,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Donut Legend */}
               <div className="flex items-center justify-center gap-6 pt-2 border-t border-slate-100 text-xs text-slate-600 font-medium">
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
@@ -467,9 +446,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Bottom Row: Properties Table & Recent Financials */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left: Properties Table (7 cols) */}
+
             <div className="lg:col-span-7 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-slate-900">Properties</h3>
@@ -518,7 +496,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Right: Recent Financials List (5 cols) */}
             <div className="lg:col-span-5 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-slate-900">Recent Financials</h3>
@@ -575,14 +552,13 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ================= RIGHT RAIL COLUMN (4 cols on XL, 3 cols on 2XL) ================= */}
         <div className="xl:col-span-4 2xl:col-span-3 space-y-6">
-          {/* Card 1: Quick Actions (2x3 Grid) */}
+
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs">
             <h3 className="text-sm font-bold text-slate-900 mb-4">Quick Actions</h3>
 
             <div className="grid grid-cols-2 gap-3">
-              {/* Action 1: Add Property */}
+
               <Link
                 to="/properties"
                 className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all text-center group cursor-pointer"
@@ -595,7 +571,6 @@ export default function Dashboard() {
                 </span>
               </Link>
 
-              {/* Action 2: Add Tenant */}
               <Link
                 to="/tenants"
                 className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/30 transition-all text-center group cursor-pointer"
@@ -608,7 +583,6 @@ export default function Dashboard() {
                 </span>
               </Link>
 
-              {/* Action 3: Record Payment */}
               <Link
                 to="/receipting"
                 className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-slate-100 hover:border-purple-200 hover:bg-purple-50/30 transition-all text-center group cursor-pointer"
@@ -621,7 +595,6 @@ export default function Dashboard() {
                 </span>
               </Link>
 
-              {/* Action 4: Log Maintenance */}
               <Link
                 to="/meter-readings"
                 className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-slate-100 hover:border-amber-200 hover:bg-amber-50/30 transition-all text-center group cursor-pointer"
@@ -634,7 +607,6 @@ export default function Dashboard() {
                 </span>
               </Link>
 
-              {/* Action 5: Generate Report */}
               <Link
                 to="/statements"
                 className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-slate-100 hover:border-teal-200 hover:bg-teal-50/30 transition-all text-center group cursor-pointer"
@@ -647,7 +619,6 @@ export default function Dashboard() {
                 </span>
               </Link>
 
-              {/* Action 6: More Actions */}
               <Link
                 to="/communications"
                 className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-center group cursor-pointer"
@@ -662,7 +633,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Card 2: Upcoming Tasks */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-slate-900">Upcoming Tasks</h3>
@@ -675,7 +645,7 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-3.5">
-              {/* Task 1 */}
+
               <div className="flex items-start justify-between gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="h-8 w-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0 mt-0.5">
@@ -693,7 +663,6 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              {/* Task 2 */}
               <div className="flex items-start justify-between gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="h-8 w-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
@@ -713,7 +682,6 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              {/* Task 3 */}
               <div className="flex items-start justify-between gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
@@ -731,7 +699,6 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              {/* Task 4 */}
               <div className="flex items-start justify-between gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
@@ -749,7 +716,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Card 3: Recent Activity Feed */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-slate-900">Recent Activity</h3>
@@ -762,7 +728,7 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-3.5">
-              {/* Activity 1 */}
+
               <div className="flex items-start justify-between gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
@@ -782,7 +748,6 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              {/* Activity 2 */}
               <div className="flex items-start justify-between gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="h-8 w-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
@@ -800,7 +765,6 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              {/* Activity 3 */}
               <div className="flex items-start justify-between gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
@@ -816,7 +780,6 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              {/* Activity 4 */}
               <div className="flex items-start justify-between gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">

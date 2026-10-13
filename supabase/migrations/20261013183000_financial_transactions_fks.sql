@@ -1,6 +1,3 @@
--- Migration: Add compound foreign keys from financial_transactions to tenants, units, and leases
--- This ensures multi-tenant integrity and allows PostgREST embeddings without ambiguity.
-
 DO $$
 BEGIN
     IF NOT EXISTS (

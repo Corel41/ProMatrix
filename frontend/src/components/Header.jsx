@@ -23,7 +23,7 @@ export default function Header({ activeContext, session }) {
 
   return (
     <header className="w-full h-16 border-b border-slate-200 bg-white flex-shrink-0 px-8 flex items-center justify-between z-20">
-      {/* Global Search Input */}
+
       <div className="relative w-80 md:w-96">
         <Search className="h-4 w-4 text-slate-400 absolute left-3.5 top-2.5" />
         <input
@@ -35,9 +35,8 @@ export default function Header({ activeContext, session }) {
         />
       </div>
 
-      {/* Header Right Actions */}
       <div className="flex items-center gap-4">
-        {/* Notification Bell with Badge */}
+
         <button
           type="button"
           aria-label="Notifications"
@@ -49,13 +48,12 @@ export default function Header({ activeContext, session }) {
           </span>
         </button>
 
-        {/* User Dynamic Profile Dropdown */}
         <div className="relative">
           <button
             onClick={() => setShowProfileMenu((prev) => !prev)}
             className="flex items-center gap-3 pl-2 pr-2 py-1 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
           >
-            {/* Avatar thumbnail */}
+
             <div className="h-9 w-9 rounded-full overflow-hidden bg-gradient-to-tr from-slate-800 to-slate-700 text-white flex items-center justify-center text-xs font-semibold ring-2 ring-slate-100 shrink-0">
               <span className="font-mono">
                 {fullName
@@ -67,7 +65,6 @@ export default function Header({ activeContext, session }) {
               </span>
             </div>
 
-            {/* User Name & Role */}
             <div className="hidden sm:block text-left">
               <p className="text-xs font-bold text-slate-900 leading-tight">
                 {fullName}
@@ -80,7 +77,6 @@ export default function Header({ activeContext, session }) {
             <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
           </button>
 
-          {/* Profile Dropdown Menu */}
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
               <div className="px-4 py-3 border-b border-slate-100">

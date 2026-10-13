@@ -31,7 +31,6 @@ export default function Landlords() {
   const [errorMsg, setErrorMsg] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
 
-  // Form State
   const initialFormState = {
     landlord_no: '',
     surname: '',
@@ -162,7 +161,7 @@ export default function Landlords() {
       <Navbar activeContext={context} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-        {/* Header Breadcrumb & Actions */}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-brand-400 mb-1.5">
@@ -206,7 +205,6 @@ export default function Landlords() {
           </div>
         </div>
 
-        {/* Feedback Alerts */}
         {errorMsg && (
           <div className="p-4 rounded-2xl bg-coral-950/30 border border-coral-500/30 text-coral-300 text-xs flex items-start gap-3 shadow-card">
             <AlertCircle className="h-4 w-4 text-coral-400 shrink-0 mt-0.5" />
@@ -233,7 +231,6 @@ export default function Landlords() {
           </div>
         )}
 
-        {/* Filter & Search Bar */}
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-surface-900/60 p-4 rounded-2xl border border-surface-800/80 shadow-card">
           <div className="relative w-full sm:w-96">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-surface-500" />
@@ -264,7 +261,6 @@ export default function Landlords() {
           </div>
         </div>
 
-        {/* Landlords Data Grid */}
         <div className="bg-surface-900/60 border border-surface-800/80 rounded-3xl overflow-hidden shadow-card">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
@@ -380,7 +376,6 @@ export default function Landlords() {
         </div>
       </main>
 
-      {/* Registration Modal Dialog */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/75 backdrop-blur-md overflow-y-auto">
           <div className="bg-surface-900 border border-surface-800 rounded-3xl w-full max-w-2xl my-8 overflow-hidden shadow-elevated flex flex-col">
@@ -405,7 +400,7 @@ export default function Landlords() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-5 flex-1 overflow-y-auto max-h-[75vh]">
-              {/* Section 1: Core Identity */}
+
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-400 font-mono mb-3">
                   1. Identification & Names
@@ -485,7 +480,6 @@ export default function Landlords() {
                 </div>
               </div>
 
-              {/* Section 2: Contact Information */}
               <div className="pt-3 border-t border-surface-800">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-400 font-mono mb-3">
                   2. Contact & Communications
@@ -521,7 +515,6 @@ export default function Landlords() {
                 </div>
               </div>
 
-              {/* Section 3: Remittance & Banking Details */}
               <div className="pt-3 border-t border-surface-800">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-400 font-mono mb-3">
                   3. Remittance & Settlement Setup
@@ -631,7 +624,6 @@ export default function Landlords() {
                 </div>
               </div>
 
-              {/* Multi-Tenant Audit Notice */}
               <div className="p-3.5 rounded-2xl bg-brand-950/40 border border-brand-500/20 text-xs text-brand-300 flex items-center gap-2.5">
                 <ShieldCheck className="h-4 w-4 text-brand-400 shrink-0" />
                 <span>
@@ -639,7 +631,6 @@ export default function Landlords() {
                 </span>
               </div>
 
-              {/* Submit Buttons */}
               <div className="pt-3 border-t border-surface-800 flex items-center justify-end gap-3">
                 <button
                   type="button"

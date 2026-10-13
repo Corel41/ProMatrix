@@ -59,7 +59,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-slate-100 selection:bg-indigo-500 selection:text-white">
-      {/* Background ambient lighting */}
+
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(99,102,241,0.15),rgba(255,255,255,0))] pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
@@ -78,7 +78,7 @@ export default function Auth() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4 sm:px-0">
         <div className="bg-slate-900/90 backdrop-blur-xl py-8 px-6 sm:px-10 shadow-2xl rounded-2xl border border-slate-800 ring-1 ring-white/5">
-          {/* Mode Switcher Tabs */}
+
           <div className="flex rounded-lg bg-slate-950/70 p-1 mb-6 border border-slate-800/80">
             <button
               type="button"
@@ -112,7 +112,6 @@ export default function Auth() {
             </button>
           </div>
 
-          {/* Feedback messages */}
           {errorMessage && (
             <div className="mb-5 p-3.5 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-start gap-3 text-rose-300 text-sm animate-in fade-in">
               <AlertCircle className="h-5 w-5 shrink-0 mt-0.5 text-rose-400" />
@@ -127,7 +126,6 @@ export default function Auth() {
             </div>
           )}
 
-          {/* Form */}
           <form className="space-y-4" onSubmit={handleAuth}>
             {isSignUp && (
               <div>
@@ -208,7 +206,6 @@ export default function Auth() {
             </button>
           </form>
 
-          {/* Footer note */}
           <div className="mt-6 pt-5 border-t border-slate-800 text-center">
             <p className="text-xs text-slate-500">
               Server validation authoritative • Default Deny RLS enforced

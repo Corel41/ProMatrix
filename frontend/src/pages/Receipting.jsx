@@ -37,10 +37,8 @@ export default function Receipting() {
   const [successMsg, setSuccessMsg] = useState('')
   const [printedReceipt, setPrintedReceipt] = useState(null)
 
-  // 1. Line-Item Allocation State (keyed by bill ID or charge type ID)
   const [lineAllocations, setLineAllocations] = useState({})
 
-  // 2. Bottom Form State (Posting Date, Payment Date, Payment Type, Ref No, Bank Name, Comments)
   const todayStr = new Date().toISOString().split('T')[0]
   const initialFormState = {
     posting_date: todayStr,
@@ -59,7 +57,6 @@ export default function Receipting() {
       const tenant = await getTenantContext()
       setContext(tenant)
 
-      // Fetch active leases with tenant, property, and unit
       const { data: leasesData, error: lErr } = await supabase
         .from('leases')
         .select(`
@@ -96,7 +93,6 @@ export default function Receipting() {
       if (lErr) throw lErr
       setLeasesList(leasesData || [])
 
-      // Fetch active charge types
       const { data: ctData, error: ctErr } = await supabase
         .from('charge_types')
         .select('id, code, name, description')
@@ -106,7 +102,6 @@ export default function Receipting() {
       if (ctErr) throw ctErr
       setChargeTypes(ctData || [])
 
-      // Fetch current accounting period
       const { data: pData } = await supabase
         .from('accounting_periods')
         .select('id')
@@ -118,7 +113,6 @@ export default function Receipting() {
         setCurrentPeriodId(pData[0].id)
       }
 
-      // Fetch recent receipts for audit stream
       const { data: recData, error: recErr } = await supabase
         .from('financial_transactions')
         .select(`
@@ -153,7 +147,6 @@ export default function Receipting() {
       if (recErr) throw recErr
       setRecentReceipts(recData || [])
 
-      // Auto-select first lease if available and none selected
       if (leasesData && leasesData.length > 0 && !selectedLeaseId) {
         handleSelectLease(leasesData[0].id, leasesData, tenant)
       }
@@ -182,7 +175,7 @@ export default function Receipting() {
 
     setLoadingBills(true)
     try {
-      // Fetch outstanding bills / invoices for this tenant & lease
+
       const { data: billsData, error: bErr } = await supabase
         .from('financial_transactions')
         .select(`
@@ -215,14 +208,12 @@ export default function Receipting() {
     }
   }
 
-  // Build grid payable rows combining actual outstanding invoices with all standard charge types
   const payableRows = useMemo(() => {
     if (!selectedLease) return []
 
     const rows = []
     const invoicedChargeTypeIds = new Set()
 
-    // 1. Add rows for every outstanding invoice
     for (const bill of outstandingBills) {
       const chargeTypeId = bill.charge_type_id || bill.charge_types?.id
       if (chargeTypeId) {
@@ -243,7 +234,6 @@ export default function Receipting() {
       })
     }
 
-    // 2. Add rows for other standard charge types (e.g. Rent, Service Charge, Water, Garbage, Deposits)
     for (const ct of chargeTypes) {
       if (!invoicedChargeTypeIds.has(ct.id)) {
         rows.push({
@@ -265,7 +255,6 @@ export default function Receipting() {
     return rows
   }, [selectedLease, outstandingBills, chargeTypes])
 
-  // Handle line item allocation changes
   const handleLineAmountChange = (key, value) => {
     setLineAllocations((prev) => ({
       ...prev,
@@ -273,7 +262,6 @@ export default function Receipting() {
     }))
   }
 
-  // Quick action: Allocate full outstanding amount for an invoice
   const handleAllocateFull = (key, outstandingAmount) => {
     setLineAllocations((prev) => ({
       ...prev,
@@ -281,7 +269,6 @@ export default function Receipting() {
     }))
   }
 
-  // Dynamic Total: automatically sums whatever the user types into the line-item inputs
   const dynamicTotal = useMemo(() => {
     return Object.values(lineAllocations).reduce((sum, val) => {
       const num = parseFloat(val)
@@ -289,7 +276,6 @@ export default function Receipting() {
     }, 0)
   }, [lineAllocations])
 
-  // Count how many lines have a positive allocation
   const activeAllocationsCount = useMemo(() => {
     return Object.values(lineAllocations).filter((val) => {
       const num = parseFloat(val)
@@ -297,13 +283,11 @@ export default function Receipting() {
     }).length
   }, [lineAllocations])
 
-  // Handle bottom form inputs
   const handleFormChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Execute Batch Receipt Submission
   const handleSubmitReceipt = async (e) => {
     e.preventDefault()
     setSubmitting(true)
@@ -314,7 +298,6 @@ export default function Receipting() {
       if (!context) throw new Error('Tenant context missing.')
       if (!selectedLease) throw new Error('Please select an active Tenant / Tenancy Account.')
 
-      // Collect all line items where the user entered an amount > 0
       const allocationsToPost = []
       for (const row of payableRows) {
         const rawVal = lineAllocations[row.key]
@@ -337,7 +320,6 @@ export default function Receipting() {
       const txMonth = pDate.getMonth() + 1
       const txYear = pDate.getFullYear()
 
-      // Construct distinct credit rows mapping to the exact charge_type_id of each line
       const payloads = allocationsToPost.map(({ row, amount }) => ({
         company_id: context.companyId,
         branch_id: context.branchId,
@@ -363,7 +345,6 @@ export default function Receipting() {
         is_confirmed: true,
       }))
 
-      // Batch insert into financial_transactions
       const { data: insertedData, error: txErr } = await supabase
         .from('financial_transactions')
         .insert(payloads)
@@ -371,7 +352,6 @@ export default function Receipting() {
 
       if (txErr) throw txErr
 
-      // Format voucher details for receipt modal
       const totalAmount = allocationsToPost.reduce((s, a) => s + a.amount, 0)
       const receiptVoucher = {
         reference_no: receiptNo,
@@ -398,7 +378,6 @@ export default function Receipting() {
         `Receipt ${receiptNo} posted successfully! Created ${allocationsToPost.length} distinct credit row(s) totaling KES ${totalAmount.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`
       )
 
-      // Reset allocations & non-date form inputs
       setLineAllocations({})
       setFormData((prev) => ({
         ...prev,
@@ -407,7 +386,6 @@ export default function Receipting() {
         comments: '',
       }))
 
-      // Reload data
       await loadInitialData()
       if (selectedLeaseId) {
         await handleSelectLease(selectedLeaseId)
@@ -427,7 +405,7 @@ export default function Receipting() {
       <Navbar activeContext={context} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Header Breadcrumb & Actions */}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-indigo-400 mb-1">
@@ -458,7 +436,6 @@ export default function Receipting() {
           </div>
         </div>
 
-        {/* Feedback Alerts */}
         {errorMsg && (
           <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-sm flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
@@ -485,7 +462,6 @@ export default function Receipting() {
           </div>
         )}
 
-        {/* 1. Tenant / Lease Selection Header */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono mb-2">
@@ -507,7 +483,6 @@ export default function Receipting() {
             </div>
           </div>
 
-          {/* Selected Account Summary Pill */}
           {selectedLease && (
             <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
@@ -546,7 +521,6 @@ export default function Receipting() {
           )}
         </div>
 
-        {/* 2. Outstanding Balances & Manual Allocation Grid */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
           <div className="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
             <div className="flex items-center gap-2">
@@ -612,7 +586,7 @@ export default function Receipting() {
                             : 'hover:bg-slate-800/40 text-slate-300'
                         }`}
                       >
-                        {/* Payable Item */}
+
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-slate-200">{row.chargeTypeName}</span>
@@ -629,7 +603,6 @@ export default function Receipting() {
                           )}
                         </td>
 
-                        {/* Invoice Ref */}
                         <td className="py-3 px-4 font-mono">
                           {row.isInvoice ? (
                             <span className="font-semibold text-indigo-400">{row.refNo}</span>
@@ -638,12 +611,10 @@ export default function Receipting() {
                           )}
                         </td>
 
-                        {/* Period / Date */}
                         <td className="py-3 px-4 font-mono text-slate-400">
                           {row.date || row.period}
                         </td>
 
-                        {/* Balance Due */}
                         <td className="py-3 px-4 font-mono font-bold text-right text-rose-300">
                           {row.outstandingAmount > 0
                             ? Number(row.outstandingAmount).toLocaleString('en-KE', {
@@ -653,7 +624,6 @@ export default function Receipting() {
                             : '0.00'}
                         </td>
 
-                        {/* Numeric Text Input for Manual Allocation */}
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             {row.outstandingAmount > 0 && (
@@ -688,7 +658,7 @@ export default function Receipting() {
                   })
                 )}
               </tbody>
-              {/* Dynamic Running Total Footer */}
+
               <tfoot>
                 <tr className="border-t-2 border-slate-700 bg-slate-900/90 font-mono">
                   <td colSpan="4" className="py-3.5 px-4 text-right uppercase tracking-wider font-bold text-slate-300">
@@ -709,7 +679,6 @@ export default function Receipting() {
           </div>
         </div>
 
-        {/* 3. Retained Bottom Form Elements & Execution Action */}
         <form onSubmit={handleSubmitReceipt} className="space-y-6">
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
@@ -725,7 +694,6 @@ export default function Receipting() {
                 </div>
               </div>
 
-              {/* Dynamic Total Pill */}
               <div className="bg-slate-950 border border-emerald-500/30 px-3.5 py-1.5 rounded-xl font-mono text-xs flex items-center gap-2">
                 <span className="text-slate-400">Total To Credit:</span>
                 <span className="font-bold text-emerald-400 text-sm">
@@ -739,7 +707,7 @@ export default function Receipting() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Posting Date */}
+
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   Posting Date <span className="text-rose-400">*</span>
@@ -754,7 +722,6 @@ export default function Receipting() {
                 />
               </div>
 
-              {/* Payment Date */}
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   Payment Date <span className="text-rose-400">*</span>
@@ -769,7 +736,6 @@ export default function Receipting() {
                 />
               </div>
 
-              {/* Payment Type */}
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   Payment Type <span className="text-rose-400">*</span>
@@ -787,7 +753,7 @@ export default function Receipting() {
                 </select>
               </div>
 
-              {/* Ref No */}
+              
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   Ref No (M-Pesa / Cheque)
@@ -802,7 +768,7 @@ export default function Receipting() {
                 />
               </div>
 
-              {/* Bank Name */}
+              
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   Bank Name / Account
@@ -817,7 +783,7 @@ export default function Receipting() {
                 />
               </div>
 
-              {/* Security Guardrail Info */}
+              
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   Isolation Context
@@ -831,7 +797,7 @@ export default function Receipting() {
               </div>
             </div>
 
-            {/* Comments */}
+            
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
                 Comments / Narrative
@@ -846,7 +812,7 @@ export default function Receipting() {
               />
             </div>
 
-            {/* Save Button */}
+            
             <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <p className="text-xs text-slate-400">
                 {activeAllocationsCount > 0
@@ -874,7 +840,7 @@ export default function Receipting() {
           </div>
         </form>
 
-        {/* 4. Recent Cashier Receipts Audit Stream */}
+        
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5 shadow-md">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono mb-3 flex items-center gap-2">
             <Receipt className="h-4 w-4 text-emerald-400" />
@@ -909,7 +875,7 @@ export default function Receipting() {
           </div>
         </div>
 
-        {/* 5. Printable Receipt Voucher Modal */}
+        
         {printedReceipt && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
             <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl p-6 space-y-5">
@@ -926,7 +892,7 @@ export default function Receipting() {
                 </button>
               </div>
 
-              {/* Receipt Body */}
+              
               <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 font-mono text-xs">
                 <div className="text-center pb-2 border-b border-slate-800">
                   <p className="font-bold text-sm text-white uppercase">{context?.companyName}</p>
@@ -974,7 +940,7 @@ export default function Receipting() {
                   </div>
                 )}
 
-                {/* Line Items Breakdown */}
+                
                 <div className="pt-2 border-t border-slate-800">
                   <div className="flex justify-between text-[11px] text-slate-500 font-semibold mb-1">
                     <span>ALLOCATED ITEM</span>

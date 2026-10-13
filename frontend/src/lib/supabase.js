@@ -3,7 +3,6 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Helper to safely parse URL or fallback for placeholder development values
 const getSafeUrl = (url) => {
   try {
     return url && Boolean(new URL(url)) ? url : 'https://placeholder.supabase.co'

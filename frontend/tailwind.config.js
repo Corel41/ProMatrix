@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -24,7 +23,7 @@ export default {
           800: '#27272a',
           850: '#202024',
           900: '#18181b',
-          950: '#0f0f12', // warm charcoal obsidian
+          950: '#0f0f12',
         },
         brand: {
           50: '#eef2ff',

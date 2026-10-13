@@ -39,14 +39,11 @@ export default function Payroll() {
     'July', 'August', 'September', 'October', 'November', 'December'
   ]
 
-  // Statutory Deduction Calculation Engine (Kenya Model)
   const calculateStatutory = (basicSalary, allowances = 0) => {
     const gross = basicSalary + allowances
 
-    // 1. NSSF (Kenya Standard Tier II: 6% of pensionable pay, capped at KES 2,160)
     const nssf = Math.min(Math.round(gross * 0.06), 2160)
 
-    // 2. NHIF / SHIF (Graduated tier / ~2.75% standard social health insurance)
     let nhif = 0
     if (gross <= 5999) nhif = 150
     else if (gross <= 7999) nhif = 300
@@ -59,7 +56,6 @@ export default function Payroll() {
     else if (gross <= 99999) nhif = 1400
     else nhif = 1700
 
-    // 3. PAYE Tax (Graduated bracket less personal relief of KES 2,400)
     const taxablePay = Math.max(0, gross - nssf)
     let grossTax = 0
 
@@ -71,7 +67,7 @@ export default function Payroll() {
       grossTax = (24000 * 0.10) + ((32333 - 24000) * 0.25) + ((taxablePay - 32333) * 0.30)
     }
 
-    const paye = Math.max(0, Math.round(grossTax - 2400)) // Apply KES 2,400 personal tax relief
+    const paye = Math.max(0, Math.round(grossTax - 2400))
     const totalDeductions = nssf + nhif + paye
     const net = Math.max(0, gross - totalDeductions)
 
@@ -92,7 +88,6 @@ export default function Payroll() {
       const tenant = await getTenantContext()
       setContext(tenant)
 
-      // Fetch active employees
       const { data: empData, error: empErr } = await supabase
         .from('employees')
         .select('*')
@@ -103,7 +98,6 @@ export default function Payroll() {
       if (empErr) throw empErr
       setEmployees(empData || [])
 
-      // Check if a payroll run already exists for this period
       const { data: runData, error: runErr } = await supabase
         .from('payroll_runs')
         .select('*, payslips(*)')
@@ -115,7 +109,6 @@ export default function Payroll() {
       if (runErr) throw runErr
       setExistingRun(runData)
 
-      // If existing run has payslips, initialize allowances from them
       if (runData?.payslips && runData.payslips.length > 0) {
         const initMap = {}
         runData.payslips.forEach((ps) => {
@@ -143,7 +136,6 @@ export default function Payroll() {
     }))
   }
 
-  // Aggregate Computed Payroll Line Items
   const computedList = employees.map((emp) => {
     const basic = parseFloat(emp.basic_salary || 0)
     const allowances = parseFloat(allowancesMap[emp.id] || 0)
@@ -177,7 +169,6 @@ export default function Payroll() {
         throw new Error('No active staff available to process for this period.')
       }
 
-      // 1. Create or update the payroll run
       let runId = existingRun?.id
 
       if (!runId) {
@@ -200,7 +191,7 @@ export default function Payroll() {
         if (runError) throw runError
         runId = newRun.id
       } else {
-        // Update existing run
+
         const { error: updateRunErr } = await supabase
           .from('payroll_runs')
           .update({
@@ -212,7 +203,6 @@ export default function Payroll() {
 
         if (updateRunErr) throw updateRunErr
 
-        // Delete existing payslips to re-insert clean lines
         const { error: delErr } = await supabase
           .from('payslips')
           .delete()
@@ -221,7 +211,6 @@ export default function Payroll() {
         if (delErr) throw delErr
       }
 
-      // 2. Batch Insert Payslips
       const payslipsPayload = computedList.map((row) => ({
         company_id: context.companyId,
         branch_id: context.branchId,
@@ -256,7 +245,7 @@ export default function Payroll() {
 
   return (
     <div className="w-full px-8 py-6 space-y-6 bg-surface-950 text-surface-100 min-h-full">
-      {/* Header Breadcrumb & Actions */}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-mono text-brand-400 mb-1">
@@ -275,7 +264,6 @@ export default function Payroll() {
           </p>
         </div>
 
-        {/* Period Selector & Refresh */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 bg-surface-900/80 border border-surface-800 rounded-xl px-3 py-1.5 shadow-soft">
             <Calendar className="h-4 w-4 text-brand-400" />
@@ -316,7 +304,6 @@ export default function Payroll() {
         </div>
       </div>
 
-      {/* Existing Run Status Notification */}
       {existingRun && (
         <div className="p-4 rounded-2xl bg-brand-950/40 border border-brand-500/20 text-xs text-brand-200 flex items-center justify-between shadow-card">
           <div className="flex items-center gap-2.5">
@@ -332,9 +319,8 @@ export default function Payroll() {
         </div>
       )}
 
-      {/* Metrics Row: Gross, Statutory, Net Totals */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        {/* Total Gross Pay */}
+
         <div className="p-4 rounded-2xl bg-surface-900/60 border border-surface-800/80 shadow-card">
           <div className="flex items-center justify-between text-xs text-surface-400 font-medium">
             <span>Total Gross Pay</span>
@@ -346,7 +332,6 @@ export default function Payroll() {
           <p className="text-[11px] text-surface-500 mt-1">{computedList.length} staff members</p>
         </div>
 
-        {/* PAYE Tax */}
         <div className="p-4 rounded-2xl bg-surface-900/60 border border-surface-800/80 shadow-card">
           <div className="flex items-center justify-between text-xs text-surface-400 font-medium">
             <span>KRA PAYE Remittance</span>
@@ -358,7 +343,6 @@ export default function Payroll() {
           <p className="text-[11px] text-surface-500 mt-1">Tax withheld at source</p>
         </div>
 
-        {/* Social Security (NSSF + NHIF) */}
         <div className="p-4 rounded-2xl bg-surface-900/60 border border-surface-800/80 shadow-card">
           <div className="flex items-center justify-between text-xs text-surface-400 font-medium">
             <span>NSSF & NHIF Deductions</span>
@@ -370,7 +354,6 @@ export default function Payroll() {
           <p className="text-[11px] text-surface-500 mt-1">NSSF: KES {totalNssf.toLocaleString()} | NHIF: KES {totalNhif.toLocaleString()}</p>
         </div>
 
-        {/* Net Disbursable */}
         <div className="p-4 rounded-2xl bg-surface-900/60 border border-surface-800/80 shadow-card">
           <div className="flex items-center justify-between text-xs text-surface-400 font-medium">
             <span>Net Disbursable Amount</span>
@@ -383,7 +366,6 @@ export default function Payroll() {
         </div>
       </div>
 
-      {/* Feedback Alerts */}
       {errorMsg && (
         <div className="p-4 rounded-2xl bg-coral-950/30 border border-coral-500/30 text-coral-300 text-xs flex items-start gap-3 shadow-card">
           <AlertCircle className="h-4 w-4 text-coral-400 shrink-0 mt-0.5" />
@@ -410,7 +392,6 @@ export default function Payroll() {
         </div>
       )}
 
-      {/* Master Payroll Data Grid */}
       <div className="bg-surface-900/60 border border-surface-800/80 rounded-3xl overflow-hidden shadow-card">
         <div className="p-4 border-b border-surface-800/80 flex items-center justify-between bg-surface-950/60">
           <div>

@@ -28,22 +28,19 @@ export default function MeterReadings() {
   const [errorMsg, setErrorMsg] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
 
-  // Filter & Period State
   const today = new Date()
   const [selectedPropertyId, setSelectedPropertyId] = useState('all')
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(today.getFullYear())
   const [readingDate, setReadingDate] = useState(today.toISOString().split('T')[0])
-  const [tariffRate, setTariffRate] = useState(150.0) // KES per unit/cubic meter
+  const [tariffRate, setTariffRate] = useState(150.0)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Entities Data
   const [propertiesList, setPropertiesList] = useState([])
   const [unitsWithMeters, setUnitsWithMeters] = useState([])
   const [metersMap, setMetersMap] = useState({})
   const [previousReadingsMap, setPreviousReadingsMap] = useState({})
 
-  // Editable Current Readings State: keyed by unit.id -> string
   const [currentReadingsInput, setCurrentReadingsInput] = useState({})
 
   const loadData = async () => {
@@ -53,7 +50,6 @@ export default function MeterReadings() {
       const tenant = await getTenantContext()
       setContext(tenant)
 
-      // 1. Fetch properties for dropdown filter
       const { data: propData, error: propErr } = await supabase
         .from('properties')
         .select('id, property_code, name')
@@ -63,7 +59,6 @@ export default function MeterReadings() {
       if (propErr) throw propErr
       setPropertiesList(propData || [])
 
-      // 2. Fetch all units that have a recorded water_meter_no
       const { data: unitsData, error: uErr } = await supabase
         .from('units')
         .select(`
@@ -93,7 +88,6 @@ export default function MeterReadings() {
       )
       setUnitsWithMeters(validUnits)
 
-      // 3. Fetch utility meters for these units
       const { data: metersData, error: mErr } = await supabase
         .from('utility_meters')
         .select('id, unit_id, meter_number, initial_reading, current_reading')
@@ -107,7 +101,6 @@ export default function MeterReadings() {
         mMap[m.unit_id] = m
       })
 
-      // Ensure any unit without a utility_meters entry gets registered automatically
       for (const u of validUnits) {
         if (!mMap[u.id]) {
           const { data: newMeter, error: newMErr } = await supabase
@@ -136,7 +129,6 @@ export default function MeterReadings() {
       }
       setMetersMap(mMap)
 
-      // 4. Fetch previous utility readings to populate Previous Reading column
       const { data: readingsData, error: rErr } = await supabase
         .from('utility_readings')
         .select('unit_id, current_reading, reading_date, month, year')
@@ -146,14 +138,13 @@ export default function MeterReadings() {
       if (rErr) throw rErr
 
       const prevMap = {}
-      // Map the most recent recorded reading per unit
+
       ;(readingsData || []).forEach((r) => {
         if (prevMap[r.unit_id] === undefined) {
           prevMap[r.unit_id] = Number(r.current_reading || 0)
         }
       })
 
-      // Fallback to meter's current_reading or initial_reading
       validUnits.forEach((u) => {
         if (prevMap[u.id] === undefined) {
           const meter = mMap[u.id]
@@ -173,7 +164,6 @@ export default function MeterReadings() {
     loadData()
   }, [])
 
-  // Filtered units list
   const filteredUnits = useMemo(() => {
     return unitsWithMeters.filter((u) => {
       const matchesProperty =
@@ -186,7 +176,6 @@ export default function MeterReadings() {
     })
   }, [unitsWithMeters, selectedPropertyId, searchQuery])
 
-  // Handle Current Reading input change
   const handleCurrentReadingChange = (unitId, value) => {
     setCurrentReadingsInput((prev) => ({
       ...prev,
@@ -194,7 +183,6 @@ export default function MeterReadings() {
     }))
   }
 
-  // Row-level computations
   const getRowCalculations = (unitId) => {
     const prev = previousReadingsMap[unitId] || 0.0
     const rawCurr = currentReadingsInput[unitId]
@@ -225,7 +213,6 @@ export default function MeterReadings() {
     }
   }
 
-  // Aggregate metrics across active inputs
   const aggregates = useMemo(() => {
     let enteredCount = 0
     let totalConsumption = 0
@@ -247,7 +234,6 @@ export default function MeterReadings() {
     }
   }, [filteredUnits, currentReadingsInput, previousReadingsMap, tariffRate])
 
-  // Batch Save Readings Execution
   const handleSaveReadings = async () => {
     setSubmitting(true)
     setErrorMsg('')
@@ -256,7 +242,6 @@ export default function MeterReadings() {
     try {
       if (!context) throw new Error('Tenant context missing.')
 
-      // Collect all units with valid entered readings
       const rowsToSave = []
       const meterUpdates = []
 
@@ -313,7 +298,6 @@ export default function MeterReadings() {
         throw new Error('Please enter at least one Current Reading in the grid before saving.')
       }
 
-      // 1. Batch upsert into utility_readings (unique on meter_id, year, month)
       const { data: insertedReadings, error: insErr } = await supabase
         .from('utility_readings')
         .upsert(rowsToSave, { onConflict: 'meter_id, year, month' })
@@ -321,7 +305,6 @@ export default function MeterReadings() {
 
       if (insErr) throw insErr
 
-      // 2. Update utility_meters current_reading to latest reading
       for (const update of meterUpdates) {
         await supabase
           .from('utility_meters')
@@ -338,7 +321,6 @@ export default function MeterReadings() {
         })}.`
       )
 
-      // Clear current readings inputs and reload
       setCurrentReadingsInput({})
       await loadData()
     } catch (err) {
@@ -354,7 +336,7 @@ export default function MeterReadings() {
       <Navbar activeContext={context} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Header Breadcrumb & Actions */}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-indigo-400 mb-1">
@@ -385,7 +367,6 @@ export default function MeterReadings() {
           </div>
         </div>
 
-        {/* Feedback Alerts */}
         {errorMsg && (
           <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-sm flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
@@ -412,10 +393,9 @@ export default function MeterReadings() {
           </div>
         )}
 
-        {/* Controls Bar: Property Filter, Period, Reading Date & Tariff */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {/* Property Selector */}
+
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">Estate / Property</label>
               <select
@@ -432,7 +412,6 @@ export default function MeterReadings() {
               </select>
             </div>
 
-            {/* Billing Month */}
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">Billing Month</label>
               <select
@@ -448,7 +427,6 @@ export default function MeterReadings() {
               </select>
             </div>
 
-            {/* Billing Year */}
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">Billing Year</label>
               <select
@@ -464,7 +442,6 @@ export default function MeterReadings() {
               </select>
             </div>
 
-            {/* Reading Date */}
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">Reading Date</label>
               <input
@@ -475,7 +452,6 @@ export default function MeterReadings() {
               />
             </div>
 
-            {/* Tariff Rate (KES/Unit) */}
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
                 Tariff (KES / Unit)
@@ -496,7 +472,6 @@ export default function MeterReadings() {
             </div>
           </div>
 
-          {/* Quick Search & Summary Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-3 border-t border-slate-800">
             <div className="relative max-w-sm w-full">
               <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-500" />
@@ -509,7 +484,6 @@ export default function MeterReadings() {
               />
             </div>
 
-            {/* Live Aggregate Metrics Bar */}
             <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
               <div className="bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
                 <span className="text-slate-500">METERED UNITS:</span>{' '}
@@ -539,7 +513,6 @@ export default function MeterReadings() {
           </div>
         </div>
 
-        {/* Data Grid: Units, Meters, Readings & Auto-Calculated Bills */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
           <div className="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
             <div className="flex items-center gap-2">
@@ -599,7 +572,7 @@ export default function MeterReadings() {
                             : 'hover:bg-slate-800/40 text-slate-300'
                         }`}
                       >
-                        {/* Unit Number */}
+
                         <td className="py-3 px-4 font-mono font-bold text-white">
                           <div className="flex items-center gap-2">
                             <span>Unit {unit.unit_number}</span>
@@ -609,7 +582,6 @@ export default function MeterReadings() {
                           </div>
                         </td>
 
-                        {/* Property Name */}
                         <td className="py-3 px-4 text-slate-300">
                           <span className="truncate block max-w-xs">{unit.properties?.name}</span>
                           <span className="text-[10px] font-mono text-slate-500">
@@ -617,17 +589,14 @@ export default function MeterReadings() {
                           </span>
                         </td>
 
-                        {/* Water Meter No */}
                         <td className="py-3 px-4 font-mono font-semibold text-sky-400">
                           {unit.water_meter_no}
                         </td>
 
-                        {/* Previous Reading */}
                         <td className="py-3 px-4 font-mono font-medium text-right text-slate-400">
                           {calc.previousReading.toFixed(2)}
                         </td>
 
-                        {/* Editable Current Reading Input */}
                         <td className="py-3 px-4 text-right">
                           <div className="flex flex-col items-end">
                             <input
@@ -652,7 +621,6 @@ export default function MeterReadings() {
                           </div>
                         </td>
 
-                        {/* Auto-Calculated Consumption */}
                         <td className="py-3 px-4 font-mono font-bold text-right">
                           <span
                             className={
@@ -663,7 +631,6 @@ export default function MeterReadings() {
                           </span>
                         </td>
 
-                        {/* Auto-Calculated Bill (Consumption * Tariff) */}
                         <td className="py-3 px-4 font-mono font-bold text-right text-emerald-400">
                           {calc.bill > 0
                             ? calc.bill.toLocaleString('en-KE', {
@@ -678,7 +645,6 @@ export default function MeterReadings() {
                 )}
               </tbody>
 
-              {/* Table Footer with Summary */}
               <tfoot>
                 <tr className="border-t-2 border-slate-700 bg-slate-900/90 font-mono">
                   <td colSpan="5" className="py-3.5 px-4 text-right uppercase tracking-wider font-bold text-slate-300">
@@ -701,7 +667,6 @@ export default function MeterReadings() {
             </table>
           </div>
 
-          {/* Action Footer: Batch Save Readings */}
           <div className="p-5 border-t border-slate-800 bg-slate-950/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-2 text-xs text-slate-400">
               <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />

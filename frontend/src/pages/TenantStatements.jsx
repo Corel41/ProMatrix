@@ -44,7 +44,6 @@ export default function TenantStatements() {
       const tenant = await getTenantContext()
       setContext(tenant)
 
-      // Fetch active tenants who have active leases
       const { data: tData, error: tErr } = await supabase
         .from('tenants')
         .select(`
@@ -89,7 +88,7 @@ export default function TenantStatements() {
 
     setLoadingTransactions(true)
     try {
-      // 1. Fetch tenant's active lease & property/unit info
+
       const { data: leaseData, error: lErr } = await supabase
         .from('leases')
         .select(`
@@ -119,7 +118,6 @@ export default function TenantStatements() {
         setTenantLease(null)
       }
 
-      // 2. Fetch all chronological double-entry financial transactions for this tenant
       const { data: txData, error: txErr } = await supabase
         .from('financial_transactions')
         .select(`
@@ -145,7 +143,6 @@ export default function TenantStatements() {
 
       if (txErr) throw txErr
 
-      // Calculate running balance chronologically
       let running = 0
       const calculatedTransactions = (txData || []).map((tx) => {
         const debit = Number(tx.debit_amount) || 0
@@ -165,7 +162,6 @@ export default function TenantStatements() {
     }
   }
 
-  // Summary Metrics
   const totalDebits = transactions.reduce((acc, tx) => acc + (Number(tx.debit_amount) || 0), 0)
   const totalCredits = transactions.reduce((acc, tx) => acc + (Number(tx.credit_amount) || 0), 0)
   const netClosingBalance = totalDebits - totalCredits
@@ -175,7 +171,7 @@ export default function TenantStatements() {
       <Navbar activeContext={context} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Header Breadcrumb & Actions */}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-indigo-400 mb-1">
@@ -214,7 +210,6 @@ export default function TenantStatements() {
           </div>
         </div>
 
-        {/* Tenant Selector & Account Header (Figure 3 Header) */}
         <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="w-full sm:w-96">
@@ -243,7 +238,6 @@ export default function TenantStatements() {
             )}
           </div>
 
-          {/* Account Profile Bar */}
           {selectedTenant && (
             <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
               <div>
@@ -289,7 +283,6 @@ export default function TenantStatements() {
           )}
         </div>
 
-        {/* Ledger Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 shadow-md">
             <div className="flex items-center justify-between text-xs text-slate-400">
@@ -352,7 +345,6 @@ export default function TenantStatements() {
           </div>
         </div>
 
-        {/* Chronological Double-Entry Statement Grid (Figure 3) */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
           <div className="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
             <div className="flex items-center gap-2">

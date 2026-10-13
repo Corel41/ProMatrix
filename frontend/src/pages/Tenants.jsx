@@ -33,7 +33,6 @@ export default function Tenants() {
   const [errorMsg, setErrorMsg] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
 
-  // Form State
   const initialFormState = {
     tenant_no: '',
     first_name: '',
@@ -99,10 +98,8 @@ export default function Tenants() {
         throw new Error('National ID/Passport and Primary Phone are required.')
       }
 
-      // Compute full name
       const fullName = `${formData.first_name.trim()} ${formData.last_name.trim()}`
-      
-      // Auto-generate tenant_no if empty
+
       let tenantNumber = formData.tenant_no.trim().toUpperCase()
       if (!tenantNumber) {
         tenantNumber = `T${Math.floor(10000 + Math.random() * 90000)}`
@@ -162,7 +159,7 @@ export default function Tenants() {
       <Navbar activeContext={context} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Header Breadcrumb & Actions */}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-indigo-400 mb-1">
@@ -206,7 +203,6 @@ export default function Tenants() {
           </div>
         </div>
 
-        {/* Feedback Alerts */}
         {errorMsg && (
           <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-sm flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
@@ -233,7 +229,6 @@ export default function Tenants() {
           </div>
         )}
 
-        {/* Filter & Search Bar */}
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
@@ -264,7 +259,6 @@ export default function Tenants() {
           </div>
         </div>
 
-        {/* Tenants Data Grid */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
@@ -394,7 +388,6 @@ export default function Tenants() {
         </div>
       </main>
 
-      {/* Register Tenant Modal Dialog */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl my-8 overflow-hidden shadow-2xl flex flex-col">
@@ -419,7 +412,7 @@ export default function Tenants() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-5 flex-1 overflow-y-auto max-h-[75vh]">
-              {/* Section 1: Names and Identification */}
+
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono mb-3">
                   1. Identification & Names
@@ -513,7 +506,6 @@ export default function Tenants() {
                 </div>
               </div>
 
-              {/* Section 2: Employment / Workplace */}
               <div className="pt-3 border-t border-slate-800/80">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono mb-3">
                   2. Employment & Workplace Information
@@ -548,7 +540,6 @@ export default function Tenants() {
                 </div>
               </div>
 
-              {/* Section 3: Next of Kin & Emergency */}
               <div className="pt-3 border-t border-slate-800/80">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono mb-3">
                   3. Next of Kin & Emergency Contact
@@ -639,7 +630,6 @@ export default function Tenants() {
                 </div>
               </div>
 
-              {/* Multi-Tenant Audit Notice */}
               <div className="p-3 rounded-lg bg-indigo-950/30 border border-indigo-800/40 text-xs text-indigo-300 flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-indigo-400 shrink-0" />
                 <span>
@@ -647,7 +637,6 @@ export default function Tenants() {
                 </span>
               </div>
 
-              {/* Submit Buttons */}
               <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-3">
                 <button
                   type="button"

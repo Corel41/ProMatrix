@@ -37,7 +37,6 @@ export default function Leases() {
   const [errorMsg, setErrorMsg] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
 
-  // Form State
   const initialFormState = {
     lease_no: '',
     property_id: '',
@@ -65,7 +64,6 @@ export default function Leases() {
       const tenant = await getTenantContext()
       setContext(tenant)
 
-      // 1. Fetch properties for dropdown
       const { data: propData, error: propErr } = await supabase
         .from('properties')
         .select('id, property_code, name')
@@ -75,7 +73,6 @@ export default function Leases() {
       if (propErr) throw propErr
       setPropertiesList(propData || [])
 
-      // 2. Fetch all units for lookup and auto-fill
       const { data: allUnitsData, error: uErr } = await supabase
         .from('units')
         .select('id, property_id, unit_number, unit_category, base_rent_rate, rent_deposit_rate, water_deposit_rate, electricity_deposit_rate, service_charge_rate, garbage_fee_rate, status, is_occupied')
@@ -85,7 +82,6 @@ export default function Leases() {
       if (uErr) throw uErr
       setUnitsList(allUnitsData || [])
 
-      // 3. Fetch active tenants for dropdown
       const { data: tData, error: tErr } = await supabase
         .from('tenants')
         .select('id, tenant_no, full_name, phone, id_or_passport_no')
@@ -96,7 +92,6 @@ export default function Leases() {
       if (tErr) throw tErr
       setTenantsList(tData || [])
 
-      // 4. Fetch leases with joined relations
       const { data: leasesData, error: lErr } = await supabase
         .from('leases')
         .select(`
@@ -136,7 +131,6 @@ export default function Leases() {
     loadData()
   }, [])
 
-  // Filter available units based on selected property
   const availableUnitsForProperty = unitsList.filter(
     (u) => !formData.property_id || u.property_id === formData.property_id
   )
@@ -146,7 +140,7 @@ export default function Leases() {
     setFormData((prev) => ({
       ...prev,
       property_id: selectedPropertyId,
-      unit_id: '', // reset selected unit
+      unit_id: '',
       agreed_rent: '',
       rent_deposit_held: '',
     }))
@@ -159,7 +153,7 @@ export default function Leases() {
     if (selectedUnit) {
       setFormData((prev) => ({
         ...prev,
-        property_id: selectedUnit.property_id, // ensure property matches unit
+        property_id: selectedUnit.property_id,
         unit_id: selectedUnitId,
         agreed_rent: String(selectedUnit.base_rent_rate || '0.00'),
         rent_deposit_held: String(selectedUnit.rent_deposit_rate || selectedUnit.base_rent_rate || '0.00'),
@@ -193,7 +187,6 @@ export default function Leases() {
         throw new Error('Valid agreed monthly rent is required.')
       }
 
-      // Generate lease number if empty
       let leaseNumber = formData.lease_no.trim().toUpperCase()
       if (!leaseNumber) {
         const randCode = Math.floor(100 + Math.random() * 900)
@@ -226,7 +219,6 @@ export default function Leases() {
         status: formData.status,
       }
 
-      // 1. Create Lease
       const { data: newLease, error: leaseErr } = await supabase
         .from('leases')
         .insert([payload])
@@ -234,7 +226,6 @@ export default function Leases() {
 
       if (leaseErr) throw leaseErr
 
-      // 2. Mark Unit as Occupied
       if (formData.status === 'active') {
         await supabase
           .from('units')
@@ -272,7 +263,7 @@ export default function Leases() {
       <Navbar activeContext={context} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Header Breadcrumb & Actions */}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-indigo-400 mb-1">
@@ -316,7 +307,6 @@ export default function Leases() {
           </div>
         </div>
 
-        {/* Feedback Alerts */}
         {errorMsg && (
           <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-sm flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
@@ -343,7 +333,6 @@ export default function Leases() {
           </div>
         )}
 
-        {/* Filter & Search Bar */}
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
@@ -374,7 +363,6 @@ export default function Leases() {
           </div>
         </div>
 
-        {/* Leases Data Grid */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
@@ -499,7 +487,6 @@ export default function Leases() {
         </div>
       </main>
 
-      {/* Create Lease Modal Dialog */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl my-8 overflow-hidden shadow-2xl flex flex-col">
@@ -524,12 +511,12 @@ export default function Leases() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-5 flex-1 overflow-y-auto max-h-[75vh]">
-              {/* Section 1: Property, Unit & Tenant Selection */}
+
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono mb-3">
                   1. Tenancy Linkage (Property • Unit • Tenant)
                 </h4>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-slate-300 mb-1">
@@ -609,7 +596,6 @@ export default function Leases() {
                 </div>
               </div>
 
-              {/* Section 2: Financial Terms & Rent Schedule */}
               <div className="pt-3 border-t border-slate-800/80">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono mb-3">
                   2. Agreed Financial Terms & Deposit Holding
@@ -708,7 +694,6 @@ export default function Leases() {
                 </div>
               </div>
 
-              {/* Section 3: Dates, Escalation & Rent Pay Day */}
               <div className="pt-3 border-t border-slate-800/80">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono mb-3">
                   3. Term Dates, Escalation & Due Date
@@ -787,7 +772,6 @@ export default function Leases() {
                 </div>
               </div>
 
-              {/* Multi-Tenant Audit Notice */}
               <div className="p-3 rounded-lg bg-indigo-950/30 border border-indigo-800/40 text-xs text-indigo-300 flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-indigo-400 shrink-0" />
                 <span>
@@ -795,7 +779,6 @@ export default function Leases() {
                 </span>
               </div>
 
-              {/* Submit Buttons */}
               <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-3">
                 <button
                   type="button"

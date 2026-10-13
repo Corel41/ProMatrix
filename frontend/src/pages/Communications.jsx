@@ -29,41 +29,35 @@ import { getTenantContext } from '../lib/tenantContext'
 import Navbar from '../components/Navbar'
 
 export default function Communications() {
-  const [activeTab, setActiveTab] = useState('single') // 'single' | 'bulk' | 'logs'
+  const [activeTab, setActiveTab] = useState('single')
   const [context, setContext] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
 
-  // Entities Data
   const [propertiesList, setPropertiesList] = useState([])
   const [tenantsList, setTenantsList] = useState([])
   const [leasesList, setLeasesList] = useState([])
   const [commsLogs, setCommsLogs] = useState([])
 
-  // Modal State
   const [selectedLogDetail, setSelectedLogDetail] = useState(null)
 
-  // ── Tab 1: Single SMS State ──────────────────────────────────────────
   const [singleTenantId, setSingleTenantId] = useState('')
   const [singlePhone, setSinglePhone] = useState('')
   const [singleMessageType, setSingleMessageType] = useState('general_broadcast')
   const [singleMessageContent, setSingleMessageContent] = useState('')
 
-  // ── Tab 2: Bulk SMS State ────────────────────────────────────────────
   const [bulkPropertyId, setBulkPropertyId] = useState('all')
   const [selectedTenantIds, setSelectedTenantIds] = useState(new Set())
   const [bulkMessageType, setBulkMessageType] = useState('general_broadcast')
   const [bulkMessageContent, setBulkMessageContent] = useState('')
   const [bulkSearchQuery, setBulkSearchQuery] = useState('')
 
-  // ── Tab 3: Logs Filter State ─────────────────────────────────────────
   const [logsSearchQuery, setLogsSearchQuery] = useState('')
   const [logsTypeFilter, setLogsTypeFilter] = useState('all')
   const [logsStatusFilter, setLogsStatusFilter] = useState('all')
 
-  // Templates
   const templates = [
     {
       label: 'Rent Due Reminder',
@@ -94,7 +88,6 @@ export default function Communications() {
       const tenant = await getTenantContext()
       setContext(tenant)
 
-      // 1. Fetch properties
       const { data: propData, error: propErr } = await supabase
         .from('properties')
         .select('id, property_code, name')
@@ -104,7 +97,6 @@ export default function Communications() {
       if (propErr) throw propErr
       setPropertiesList(propData || [])
 
-      // 2. Fetch active tenants
       const { data: tData, error: tErr } = await supabase
         .from('tenants')
         .select('id, tenant_no, full_name, phone, email, status')
@@ -115,7 +107,6 @@ export default function Communications() {
       if (tErr) throw tErr
       setTenantsList(tData || [])
 
-      // 3. Fetch active leases with property and unit info for Bulk targeting
       const { data: leasesData, error: lErr } = await supabase
         .from('leases')
         .select(`
@@ -149,11 +140,9 @@ export default function Communications() {
       if (lErr) throw lErr
       setLeasesList(leasesData || [])
 
-      // Auto-select all tenant IDs for bulk by default
       const allTIds = new Set((leasesData || []).map((l) => l.tenant_id).filter(Boolean))
       setSelectedTenantIds(allTIds)
 
-      // 4. Fetch historical communication logs
       const { data: logsData, error: logsErr } = await supabase
         .from('communication_logs')
         .select(`
@@ -192,7 +181,6 @@ export default function Communications() {
     loadData()
   }, [])
 
-  // Auto-fill phone when single tenant selected
   const handleSelectSingleTenant = (tenantId) => {
     setSingleTenantId(tenantId)
     const t = tenantsList.find((x) => x.id === tenantId)
@@ -201,7 +189,6 @@ export default function Communications() {
     }
   }
 
-  // SMS character and segment calculation
   const getSmsSegmentCount = (text) => {
     const len = text.length
     if (len === 0) return { chars: 0, segments: 0 }
@@ -210,7 +197,6 @@ export default function Communications() {
     return { chars: len, segments, maxSegment: segments * 153 }
   }
 
-  // ── Tab 1: Dispatch Single SMS ─────────────────────────────────────────
   const handleSendSingleSms = async (e) => {
     e.preventDefault()
     setSubmitting(true)
@@ -249,7 +235,6 @@ export default function Communications() {
         `SMS successfully dispatched to ${singlePhone}! Gateway Reference: ${gatewayRef}.`
       )
 
-      // Clear inputs
       setSingleMessageContent('')
       await loadData()
     } catch (err) {
@@ -260,7 +245,6 @@ export default function Communications() {
     }
   }
 
-  // ── Tab 2: Bulk SMS Filtered List ──────────────────────────────────────
   const bulkEligibleLeases = useMemo(() => {
     return leasesList.filter((lease) => {
       const matchesProperty =
@@ -299,7 +283,6 @@ export default function Communications() {
     setSelectedTenantIds(next)
   }
 
-  // ── Tab 2: Dispatch Bulk SMS ───────────────────────────────────────────
   const handleSendBulkSms = async (e) => {
     e.preventDefault()
     setSubmitting(true)
@@ -310,7 +293,6 @@ export default function Communications() {
       if (!context) throw new Error('Tenant context missing.')
       if (!bulkMessageContent.trim()) throw new Error('Message content cannot be empty.')
 
-      // Filter leases corresponding to checked tenant IDs
       const targetLeases = bulkEligibleLeases.filter((l) =>
         selectedTenantIds.has(l.tenant_id)
       )
@@ -322,7 +304,6 @@ export default function Communications() {
       const now = new Date().toISOString()
       const batchRef = `BULK-${Math.floor(1000 + Math.random() * 9000)}`
 
-      // Construct distinct payload for each recipient with variable replacement
       const payloads = targetLeases.map((lease, idx) => {
         const tenant = lease.tenants
         const unit = lease.units
@@ -374,7 +355,6 @@ export default function Communications() {
     }
   }
 
-  // ── Tab 3: Filtered Logs ───────────────────────────────────────────────
   const filteredLogs = useMemo(() => {
     return commsLogs.filter((log) => {
       const matchesType =
@@ -400,7 +380,6 @@ export default function Communications() {
     })
   }, [commsLogs, logsTypeFilter, logsStatusFilter, logsSearchQuery])
 
-  // Aggregate log stats
   const logStats = useMemo(() => {
     const total = commsLogs.length
     const sent = commsLogs.filter((l) => l.status === 'sent' || l.status === 'delivered').length
@@ -421,7 +400,7 @@ export default function Communications() {
       <Navbar activeContext={context} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Header Breadcrumb & Actions */}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-indigo-400 mb-1">
@@ -452,7 +431,6 @@ export default function Communications() {
           </div>
         </div>
 
-        {/* Feedback Alerts */}
         {errorMsg && (
           <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-sm flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
@@ -479,7 +457,6 @@ export default function Communications() {
           </div>
         )}
 
-        {/* Tab Navigation Controls */}
         <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
           <button
             onClick={() => setActiveTab('single')}
@@ -526,7 +503,6 @@ export default function Communications() {
           </button>
         </div>
 
-        {/* ── TAB 1: Single SMS Dispatch ───────────────────────────────── */}
         {activeTab === 'single' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
@@ -543,7 +519,7 @@ export default function Communications() {
               </div>
 
               <form onSubmit={handleSendSingleSms} className="space-y-4">
-                {/* Select Tenant Receiver */}
+
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">
                     Select Tenant / Receiver Account
@@ -563,7 +539,7 @@ export default function Communications() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Destination Phone */}
+
                   <div>
                     <label className="block text-xs font-medium text-slate-300 mb-1">
                       Receiver Mobile Phone No <span className="text-rose-400">*</span>
@@ -581,7 +557,6 @@ export default function Communications() {
                     </div>
                   </div>
 
-                  {/* Message Classification */}
                   <div>
                     <label className="block text-xs font-medium text-slate-300 mb-1">
                       Message Classification <span className="text-rose-400">*</span>
@@ -599,7 +574,6 @@ export default function Communications() {
                   </div>
                 </div>
 
-                {/* Templates Quick-Picker */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
@@ -628,7 +602,6 @@ export default function Communications() {
                   </div>
                 </div>
 
-                {/* Message Textarea */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-medium text-slate-300">
@@ -679,7 +652,6 @@ export default function Communications() {
               </form>
             </div>
 
-            {/* Right Guide Card */}
             <div className="lg:col-span-4 space-y-4">
               <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5 text-xs text-slate-300 space-y-3">
                 <h4 className="font-bold text-white text-sm flex items-center gap-2">
@@ -708,10 +680,9 @@ export default function Communications() {
           </div>
         )}
 
-        {/* ── TAB 2: Bulk SMS Campaign ─────────────────────────────────── */}
         {activeTab === 'bulk' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left 7 Columns: Filterable Tenant Target List */}
+
             <div className="lg:col-span-7 bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl space-y-4 p-5">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-800">
                 <div>
@@ -728,7 +699,6 @@ export default function Communications() {
                 </div>
               </div>
 
-              {/* Filters */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-medium text-slate-400 mb-1">
@@ -765,7 +735,6 @@ export default function Communications() {
                 </div>
               </div>
 
-              {/* Selection Table */}
               <div className="border border-slate-800 rounded-xl overflow-hidden max-h-[380px] overflow-y-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead className="sticky top-0 bg-slate-950/90 backdrop-blur-sm border-b border-slate-800 text-slate-400 font-mono">
@@ -844,7 +813,6 @@ export default function Communications() {
               </div>
             </div>
 
-            {/* Right 5 Columns: Campaign Message Composer */}
             <div className="lg:col-span-5 bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
               <div className="pb-3 border-b border-slate-800">
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
@@ -854,7 +822,7 @@ export default function Communications() {
               </div>
 
               <form onSubmit={handleSendBulkSms} className="space-y-4">
-                {/* Classification */}
+
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">
                     Message Classification
@@ -870,7 +838,6 @@ export default function Communications() {
                   </select>
                 </div>
 
-                {/* Tokens pill */}
                 <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 space-y-1">
                   <span className="font-semibold text-slate-300 block">Personalization Tokens:</span>
                   <div className="flex flex-wrap gap-1.5 font-mono text-[10px]">
@@ -886,7 +853,6 @@ export default function Communications() {
                   </div>
                 </div>
 
-                {/* Textarea */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-medium text-slate-300">
@@ -910,7 +876,6 @@ export default function Communications() {
                   />
                 </div>
 
-                {/* Dispatch Button */}
                 <button
                   type="submit"
                   disabled={submitting || selectedTenantIds.size === 0 || !bulkMessageContent.trim()}
@@ -933,10 +898,9 @@ export default function Communications() {
           </div>
         )}
 
-        {/* ── TAB 3: Historical Communication Logs ─────────────────────── */}
         {activeTab === 'logs' && (
           <div className="space-y-4">
-            {/* Top Stat Cards */}
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
                 <p className="text-[11px] text-slate-400 uppercase font-mono">Total Dispatched</p>
@@ -960,7 +924,7 @@ export default function Communications() {
               </div>
             </div>
 
-            {/* Filter Controls Bar */}
+            
             <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="relative max-w-sm w-full">
                 <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-500" />
@@ -1000,7 +964,7 @@ export default function Communications() {
               </div>
             </div>
 
-            {/* Logs Data Grid */}
+            
             <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
@@ -1088,7 +1052,7 @@ export default function Communications() {
           </div>
         )}
 
-        {/* Modal: Log Detail Viewer */}
+        
         {selectedLogDetail && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
             <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
