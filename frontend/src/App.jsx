@@ -13,6 +13,8 @@ import Receipting from './pages/Receipting'
 import TenantStatements from './pages/TenantStatements'
 import MeterReadings from './pages/MeterReadings'
 import Communications from './pages/Communications'
+import Employees from './pages/Employees'
+import Payroll from './pages/Payroll'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -68,6 +70,10 @@ export default function App() {
           <Route path="/meter-readings" element={<MeterReadings />} />
           <Route path="/statements" element={<TenantStatements />} />
           <Route path="/communications" element={<Communications />} />
+
+          {/* Domain 7: HR & Payroll Routes */}
+          <Route path="/employees" element={<Employees />} />
+          <Route path="/payroll" element={<Payroll />} />
 
           {/* Nav aliases to ensure all sidebar items resolve cleanly */}
           <Route path="/maintenance" element={<MeterReadings />} />

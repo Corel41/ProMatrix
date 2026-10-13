@@ -10,7 +10,9 @@ import {
   BarChart3,
   Contact,
   Settings,
-  Boxes
+  Boxes,
+  UserCheck,
+  Calculator
 } from 'lucide-react'
 
 export default function Sidebar({ activeContext }) {
@@ -52,6 +54,16 @@ export default function Sidebar({ activeContext }) {
       name: 'Service Charges',
       path: '/statements',
       icon: Receipt,
+    },
+    {
+      name: 'Staff Registry',
+      path: '/employees',
+      icon: UserCheck,
+    },
+    {
+      name: 'Payroll',
+      path: '/payroll',
+      icon: Calculator,
     },
     {
       name: 'Reports',
