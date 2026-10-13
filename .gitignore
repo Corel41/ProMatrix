@@ -72,3 +72,5 @@ desktop.ini
 # ─── Database & Persistent Data ──────────────────────────────────────────────
 postgres-data/
 redis-data/
+.temp/
+supabase/.temp/
