@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
+import Layout from './components/Layout'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import Landlords from './pages/Landlords'
@@ -24,7 +25,7 @@ export default function App() {
       setLoading(false)
     })
 
-    // 2. Listen for auth state changes (login, logout, token refresh)
+    // 2. Listen for auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -37,10 +38,10 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
+      <div className="h-screen w-full bg-[#0b1329] flex items-center justify-center text-slate-400">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-medium font-mono text-slate-300">Loading ProMatrix...</p>
+          <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-medium font-mono text-slate-300">Loading ProMatrix Enterprise...</p>
         </div>
       </div>
     )
@@ -49,86 +50,41 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Auth Route: If already signed in, redirect to /dashboard */}
+        {/* Auth Route */}
         <Route
           path="/auth"
           element={session ? <Navigate to="/dashboard" replace /> : <Auth />}
         />
 
-        {/* Dashboard Route: If NOT signed in, redirect to /auth */}
-        <Route
-          path="/dashboard"
-          element={session ? <Dashboard /> : <Navigate to="/auth" replace />}
-        />
+        {/* Protected App Routes wrapped in Full-Bleed Layout */}
+        <Route element={session ? <Layout session={session} /> : <Navigate to="/auth" replace />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/properties" element={<Properties />} />
+          <Route path="/landlords" element={<Landlords />} />
+          <Route path="/units" element={<Units />} />
+          <Route path="/tenants" element={<Tenants />} />
+          <Route path="/leases" element={<Leases />} />
+          <Route path="/receipting" element={<Receipting />} />
+          <Route path="/meter-readings" element={<MeterReadings />} />
+          <Route path="/statements" element={<TenantStatements />} />
+          <Route path="/communications" element={<Communications />} />
 
-        {/* Domain 1: Landlords Route */}
-        <Route
-          path="/landlords"
-          element={session ? <Landlords /> : <Navigate to="/auth" replace />}
-        />
+          {/* Nav aliases to ensure all sidebar items resolve cleanly */}
+          <Route path="/maintenance" element={<MeterReadings />} />
+          <Route path="/service-charges" element={<TenantStatements />} />
+          <Route path="/reports" element={<TenantStatements />} />
+          <Route path="/contacts" element={<Landlords />} />
+          <Route path="/settings" element={<Dashboard />} />
+        </Route>
 
-        {/* Domain 1: Properties Route */}
-        <Route
-          path="/properties"
-          element={session ? <Properties /> : <Navigate to="/auth" replace />}
-        />
-
-        {/* Domain 3: Units Route */}
-        <Route
-          path="/units"
-          element={session ? <Units /> : <Navigate to="/auth" replace />}
-        />
-
-        {/* Domain 3: Tenants Route */}
-        <Route
-          path="/tenants"
-          element={session ? <Tenants /> : <Navigate to="/auth" replace />}
-        />
-
-        {/* Domain 3: Leases Route */}
-        <Route
-          path="/leases"
-          element={session ? <Leases /> : <Navigate to="/auth" replace />}
-        />
-
-        {/* Domain 4: Utility Meter Readings */}
-        <Route
-          path="/meter-readings"
-          element={session ? <MeterReadings /> : <Navigate to="/auth" replace />}
-        />
-
-        {/* Domain 5: Financial Ledger & Receipting */}
-        <Route
-          path="/receipting"
-          element={session ? <Receipting /> : <Navigate to="/auth" replace />}
-        />
-
-        {/* Domain 5: Tenant Financial Statements */}
-        <Route
-          path="/statements"
-          element={session ? <TenantStatements /> : <Navigate to="/auth" replace />}
-        />
-
-        {/* Domain 6: Communications & Bulk SMS */}
-        <Route
-          path="/communications"
-          element={session ? <Communications /> : <Navigate to="/auth" replace />}
-        />
-
-        {/* Root Route: Redirect based on authentication status */}
+        {/* Redirect Root and Catch-all */}
         <Route
           path="/"
-          element={
-            session ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth" replace />
-          }
+          element={session ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth" replace />}
         />
-
-        {/* Catch-all unknown paths */}
         <Route
           path="*"
-          element={
-            session ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth" replace />
-          }
+          element={session ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth" replace />}
         />
       </Routes>
     </BrowserRouter>
