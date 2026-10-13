@@ -14,6 +14,17 @@
 -- =============================================================================
 
 
+-- ---------------------------------------------------------------------------
+-- PRE-MIGRATION CLEANUP
+-- Safely drop incomplete preliminary draft tables from previous aborted run
+-- ---------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_audit_properties ON public.properties;
+DROP TRIGGER IF EXISTS trg_audit_units ON public.units;
+DROP TABLE IF EXISTS public.units CASCADE;
+DROP TABLE IF EXISTS public.properties CASCADE;
+DROP FUNCTION IF EXISTS public.log_property_ops_audit_event() CASCADE;
+
+
 -- =============================================================================
 -- SECTION 1: CORE REGISTRATION & PROPERTIES
 -- Powers: Registration Module, Landlord Account & Executive Remittance (Figs 2, 4)
