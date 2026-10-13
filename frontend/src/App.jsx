@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
+import Landlords from './pages/Landlords'
+import Properties from './pages/Properties'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -50,6 +52,18 @@ export default function App() {
         <Route
           path="/dashboard"
           element={session ? <Dashboard /> : <Navigate to="/auth" replace />}
+        />
+
+        {/* Landlords Route: Domain 1 Core Registration */}
+        <Route
+          path="/landlords"
+          element={session ? <Landlords /> : <Navigate to="/auth" replace />}
+        />
+
+        {/* Properties Route: Domain 1 Core Registration */}
+        <Route
+          path="/properties"
+          element={session ? <Properties /> : <Navigate to="/auth" replace />}
         />
 
         {/* Root Route: Redirect based on authentication status */}
