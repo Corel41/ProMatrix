@@ -15,6 +15,7 @@ import MeterReadings from './pages/MeterReadings'
 import Communications from './pages/Communications'
 import Employees from './pages/Employees'
 import Payroll from './pages/Payroll'
+import Settings from './pages/Settings'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -80,7 +81,9 @@ export default function App() {
           <Route path="/service-charges" element={<TenantStatements />} />
           <Route path="/reports" element={<TenantStatements />} />
           <Route path="/contacts" element={<Landlords />} />
-          <Route path="/settings" element={<Dashboard />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/administration" element={<Settings />} />
+          <Route path="/audit-trail" element={<Settings />} />
         </Route>
 
         {/* Redirect Root and Catch-all */}
