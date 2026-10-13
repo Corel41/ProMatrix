@@ -16,7 +16,9 @@ import {
   FileText,
   UserCheck,
   TrendingUp,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Receipt,
+  CreditCard
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { getTenantContext } from '../lib/tenantContext'
@@ -33,6 +35,7 @@ export default function Dashboard() {
     units: 0,
     tenants: 0,
     leases: 0,
+    transactions: 0,
   })
 
   useEffect(() => {
@@ -49,12 +52,13 @@ export default function Dashboard() {
         setContext(tenant)
 
         // Query live counts under tenant's company
-        const [lRes, pRes, uRes, tRes, leaseRes] = await Promise.all([
+        const [lRes, pRes, uRes, tRes, leaseRes, txRes] = await Promise.all([
           supabase.from('landlords').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('properties').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('units').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('tenants').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('leases').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
+          supabase.from('financial_transactions').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
         ])
 
         setStats({
@@ -63,6 +67,7 @@ export default function Dashboard() {
           units: uRes.count || 0,
           tenants: tRes.count || 0,
           leases: leaseRes.count || 0,
+          transactions: txRes.count || 0,
         })
       } catch (err) {
         console.error('Failed to load dashboard:', err)
@@ -96,7 +101,7 @@ export default function Dashboard() {
           <div className="relative z-10 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-3">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Domains 1 & 3 Live • RLS Compound Isolation Enforced</span>
+              <span>Domains 1, 3 & 5 Live • Financial Ledger & RLS Isolation Enforced</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
               Welcome back, <span className="text-indigo-400">{user?.email}</span>
@@ -134,7 +139,7 @@ export default function Dashboard() {
             <span className="text-xs text-slate-400 font-mono">Live Cloud DB Sync</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {/* Landlords Card */}
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition-all shadow-md group">
               <div className="flex items-center justify-between">
@@ -289,6 +294,37 @@ export default function Dashboard() {
                 </Link>
               </div>
             </div>
+
+            {/* Ledger Transactions Card */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition-all shadow-md group">
+              <div className="flex items-center justify-between">
+                <div className="h-9 w-9 rounded-lg bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center">
+                  <Receipt className="h-4 w-4" />
+                </div>
+                <Link
+                  to="/statements"
+                  className="text-slate-500 group-hover:text-teal-400 transition-colors p-1"
+                >
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+              <div className="mt-3">
+                <p className="text-[11px] text-slate-400 font-medium">Ledger Records</p>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className="text-2xl font-bold font-mono text-white">{stats.transactions}</span>
+                  <span className="text-[10px] text-teal-400 font-mono">Entries</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+                <Link
+                  to="/statements"
+                  className="text-[11px] text-teal-400 hover:text-teal-300 font-medium inline-flex items-center gap-1"
+                >
+                  <span>Audit Ledger</span>
+                  <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -362,6 +398,50 @@ export default function Dashboard() {
                 >
                   <Plus className="h-3 w-3" />
                   <span>Manage Leases</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Receipting Card */}
+            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-emerald-500/40 transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
+                  <CreditCard className="h-4 w-4" />
+                  <span>Receipting Window (Fig 1)</span>
+                </div>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                  Collect rent and utilities, capture M-Pesa / Bank refs, and generate printable receipt vouchers.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between">
+                <Link
+                  to="/receipting"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600 hover:text-white transition-all"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>Open Receipting</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Tenant Statements Card */}
+            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-teal-500/40 transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-teal-400 font-semibold text-sm">
+                  <FileSpreadsheet className="h-4 w-4" />
+                  <span>Tenant Statements (Fig 3)</span>
+                </div>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                  Audit chronological double-entry debits, credits, and computed running balances per lease.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between">
+                <Link
+                  to="/statements"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-teal-600/20 text-teal-300 border border-teal-500/30 hover:bg-teal-600 hover:text-white transition-all"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>View Statements</span>
                 </Link>
               </div>
             </div>

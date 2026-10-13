@@ -11,7 +11,9 @@ import {
   UserCheck,
   Layers,
   FileText,
-  MapPin
+  MapPin,
+  Receipt,
+  FileSpreadsheet
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
@@ -46,6 +48,8 @@ export default function Navbar({ activeContext }) {
     { name: 'Units', path: '/units', icon: Layers },
     { name: 'Tenants', path: '/tenants', icon: UserCheck },
     { name: 'Leases', path: '/leases', icon: FileText },
+    { name: 'Receipting', path: '/receipting', icon: Receipt },
+    { name: 'Statements', path: '/statements', icon: FileSpreadsheet },
   ]
 
   return (

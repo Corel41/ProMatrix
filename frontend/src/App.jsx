@@ -8,6 +8,8 @@ import Properties from './pages/Properties'
 import Units from './pages/Units'
 import Tenants from './pages/Tenants'
 import Leases from './pages/Leases'
+import Receipting from './pages/Receipting'
+import TenantStatements from './pages/TenantStatements'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -85,6 +87,18 @@ export default function App() {
         <Route
           path="/leases"
           element={session ? <Leases /> : <Navigate to="/auth" replace />}
+        />
+
+        {/* Domain 5: Financial Ledger & Receipting */}
+        <Route
+          path="/receipting"
+          element={session ? <Receipting /> : <Navigate to="/auth" replace />}
+        />
+
+        {/* Domain 5: Tenant Financial Statements */}
+        <Route
+          path="/statements"
+          element={session ? <TenantStatements /> : <Navigate to="/auth" replace />}
         />
 
         {/* Root Route: Redirect based on authentication status */}

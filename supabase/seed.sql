@@ -28,6 +28,22 @@ DECLARE
     v_prop_beatrice UUID := gen_random_uuid();
     v_prop_kiganjo  UUID := gen_random_uuid();
 
+    -- Financial Seeding Variables
+    v_pid           UUID;
+    v_lease_hz1     UUID;
+    v_lease_hz2     UUID;
+    v_lease_imm     UUID;
+    v_t_byrum       UUID;
+    v_t_job         UUID;
+    v_t_miriam      UUID;
+    v_unit_b1       UUID;
+    v_unit_b2       UUID;
+    v_unit_a1       UUID;
+    v_c_rent        UUID;
+    v_c_water       UUID;
+    v_c_garbage     UUID;
+    v_c_service     UUID;
+
 BEGIN
     -- 1. Identify active user profile
     SELECT id INTO v_user_id FROM public.user_profiles ORDER BY created_at ASC LIMIT 1;
@@ -226,7 +242,87 @@ BEGIN
     WHERE u.property_id = v_prop_immanuel AND u.unit_number = 'A1' AND t.tenant_no = 'T01364'
     ON CONFLICT DO NOTHING;
 
+    -- 11. Seed Accounting Period for Current Month
+    INSERT INTO public.accounting_periods (
+        company_id, branch_id, month, year, period_name, status, vat_rate, created_by
+    ) VALUES
+        (v_company_id, v_branch_id, 10, 2026, 'October 2026', 'open', 16.00, v_user_id)
+    ON CONFLICT DO NOTHING;
+
+    -- 12. Seed Financial Ledger Transactions & Tenant Bills
+    SELECT id INTO v_pid FROM public.accounting_periods WHERE company_id = v_company_id AND month = 10 AND year = 2026 LIMIT 1;
+    SELECT id INTO v_c_rent FROM public.charge_types WHERE company_id = v_company_id AND code = '001';
+    SELECT id INTO v_c_water FROM public.charge_types WHERE company_id = v_company_id AND code = '002';
+    SELECT id INTO v_c_garbage FROM public.charge_types WHERE company_id = v_company_id AND code = '017';
+    SELECT id INTO v_c_service FROM public.charge_types WHERE company_id = v_company_id AND code = '009';
+
+    SELECT id, property_id, unit_id, tenant_id INTO v_lease_hz1, v_prop_hazina, v_unit_b1, v_t_byrum FROM public.leases WHERE lease_no = 'LS-HZ-001' LIMIT 1;
+    SELECT id, property_id, unit_id, tenant_id INTO v_lease_hz2, v_prop_hazina, v_unit_b2, v_t_job FROM public.leases WHERE lease_no = 'LS-HZ-002' LIMIT 1;
+    SELECT id, property_id, unit_id, tenant_id INTO v_lease_imm, v_prop_immanuel, v_unit_a1, v_t_miriam FROM public.leases WHERE lease_no = 'LS-IMM-001' LIMIT 1;
+
+    IF v_lease_hz1 IS NOT NULL THEN
+        -- September Billing & Payment for Byrum
+        INSERT INTO public.financial_transactions (
+            company_id, branch_id, property_id, unit_id, tenant_id, lease_id, charge_type_id, period_id,
+            entry_type, reference_no, transaction_date, month, year, debit_amount, credit_amount, comments, is_confirmed, created_by
+        ) VALUES
+            (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_rent, v_pid, 'invoice_charge', 'INV-2026-09-001', '2026-09-01', 9, 2026, 6500.00, 0.00, 'September 2026 Rent - Hazina B1', TRUE, v_user_id),
+            (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_garbage, v_pid, 'invoice_charge', 'INV-2026-09-002', '2026-09-01', 9, 2026, 100.00, 0.00, 'September 2026 Garbage Fee', TRUE, v_user_id),
+            (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_rent, v_pid, 'payment_receipt', 'REC-2026-09-041', '2026-09-05', 9, 2026, 0.00, 6600.00, 'September Rent Payment via M-Pesa (Ref: QJD8291048)', TRUE, v_user_id),
+            -- October Invoices (Outstanding)
+            (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_rent, v_pid, 'invoice_charge', 'INV-2026-10-001', '2026-10-01', 10, 2026, 6500.00, 0.00, 'October 2026 Rent - Hazina B1', TRUE, v_user_id),
+            (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_garbage, v_pid, 'invoice_charge', 'INV-2026-10-002', '2026-10-01', 10, 2026, 100.00, 0.00, 'October 2026 Garbage Sanitation Fee', TRUE, v_user_id),
+            (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_c_water, v_pid, 'invoice_charge', 'INV-2026-10-003', '2026-10-03', 10, 2026, 900.00, 0.00, 'Water Consumption: Meter WM-HZ-001 (6 Units @ KES 150)', TRUE, v_user_id)
+        ON CONFLICT DO NOTHING;
+
+        -- October Tenant Bill Summary for Byrum
+        INSERT INTO public.tenant_bill_summaries (
+            company_id, branch_id, property_id, unit_id, tenant_id, lease_id, period_id,
+            month, year, opening_arrears_balance, total_billed_amount, total_paid_amount, closing_balance, is_settled, created_by
+        ) VALUES
+            (v_company_id, v_branch_id, v_prop_hazina, v_unit_b1, v_t_byrum, v_lease_hz1, v_pid, 10, 2026, 0.00, 7500.00, 0.00, 7500.00, FALSE, v_user_id)
+        ON CONFLICT DO NOTHING;
+    END IF;
+
+    IF v_lease_hz2 IS NOT NULL THEN
+        -- October Invoices for Job Mugo Kahari (Hazina B2)
+        INSERT INTO public.financial_transactions (
+            company_id, branch_id, property_id, unit_id, tenant_id, lease_id, charge_type_id, period_id,
+            entry_type, reference_no, transaction_date, month, year, debit_amount, credit_amount, comments, is_confirmed, created_by
+        ) VALUES
+            (v_company_id, v_branch_id, v_prop_hazina, v_unit_b2, v_t_job, v_lease_hz2, v_c_rent, v_pid, 'invoice_charge', 'INV-2026-10-004', '2026-10-01', 10, 2026, 6500.00, 0.00, 'October 2026 Rent - Hazina B2', TRUE, v_user_id),
+            (v_company_id, v_branch_id, v_prop_hazina, v_unit_b2, v_t_job, v_lease_hz2, v_c_garbage, v_pid, 'invoice_charge', 'INV-2026-10-005', '2026-10-01', 10, 2026, 100.00, 0.00, 'October 2026 Garbage Fee', TRUE, v_user_id)
+        ON CONFLICT DO NOTHING;
+
+        INSERT INTO public.tenant_bill_summaries (
+            company_id, branch_id, property_id, unit_id, tenant_id, lease_id, period_id,
+            month, year, opening_arrears_balance, total_billed_amount, total_paid_amount, closing_balance, is_settled, created_by
+        ) VALUES
+            (v_company_id, v_branch_id, v_prop_hazina, v_unit_b2, v_t_job, v_lease_hz2, v_pid, 10, 2026, 0.00, 6600.00, 0.00, 6600.00, FALSE, v_user_id)
+        ON CONFLICT DO NOTHING;
+    END IF;
+
+    IF v_lease_imm IS NOT NULL THEN
+        -- October Invoices for Miriam Delight Wangui (Immanuel A1)
+        INSERT INTO public.financial_transactions (
+            company_id, branch_id, property_id, unit_id, tenant_id, lease_id, charge_type_id, period_id,
+            entry_type, reference_no, transaction_date, month, year, debit_amount, credit_amount, comments, is_confirmed, created_by
+        ) VALUES
+            (v_company_id, v_branch_id, v_prop_immanuel, v_unit_a1, v_t_miriam, v_lease_imm, v_c_rent, v_pid, 'invoice_charge', 'INV-2026-10-006', '2026-10-01', 10, 2026, 16000.00, 0.00, 'October 2026 Rent - Immanuel A1', TRUE, v_user_id),
+            (v_company_id, v_branch_id, v_prop_immanuel, v_unit_a1, v_t_miriam, v_lease_imm, v_c_service, v_pid, 'invoice_charge', 'INV-2026-10-007', '2026-10-01', 10, 2026, 500.00, 0.00, 'October 2026 Common Service Charge', TRUE, v_user_id),
+            (v_company_id, v_branch_id, v_prop_immanuel, v_unit_a1, v_t_miriam, v_lease_imm, v_c_garbage, v_pid, 'invoice_charge', 'INV-2026-10-008', '2026-10-01', 10, 2026, 150.00, 0.00, 'October 2026 Garbage Sanitation Fee', TRUE, v_user_id)
+        ON CONFLICT DO NOTHING;
+
+        INSERT INTO public.tenant_bill_summaries (
+            company_id, branch_id, property_id, unit_id, tenant_id, lease_id, period_id,
+            month, year, opening_arrears_balance, total_billed_amount, total_paid_amount, closing_balance, is_settled, created_by
+        ) VALUES
+            (v_company_id, v_branch_id, v_prop_immanuel, v_unit_a1, v_t_miriam, v_lease_imm, v_pid, 10, 2026, 0.00, 16650.00, 0.00, 16650.00, FALSE, v_user_id)
+        ON CONFLICT DO NOTHING;
+    END IF;
+
     RAISE NOTICE 'Seeding successfully completed for Company %, Branch %, User %', v_company_id, v_branch_id, v_user_id;
 END;
+
 $$;
 
