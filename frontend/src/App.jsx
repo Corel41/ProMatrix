@@ -5,6 +5,9 @@ import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import Landlords from './pages/Landlords'
 import Properties from './pages/Properties'
+import Units from './pages/Units'
+import Tenants from './pages/Tenants'
+import Leases from './pages/Leases'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -54,16 +57,34 @@ export default function App() {
           element={session ? <Dashboard /> : <Navigate to="/auth" replace />}
         />
 
-        {/* Landlords Route: Domain 1 Core Registration */}
+        {/* Domain 1: Landlords Route */}
         <Route
           path="/landlords"
           element={session ? <Landlords /> : <Navigate to="/auth" replace />}
         />
 
-        {/* Properties Route: Domain 1 Core Registration */}
+        {/* Domain 1: Properties Route */}
         <Route
           path="/properties"
           element={session ? <Properties /> : <Navigate to="/auth" replace />}
+        />
+
+        {/* Domain 3: Units Route */}
+        <Route
+          path="/units"
+          element={session ? <Units /> : <Navigate to="/auth" replace />}
+        />
+
+        {/* Domain 3: Tenants Route */}
+        <Route
+          path="/tenants"
+          element={session ? <Tenants /> : <Navigate to="/auth" replace />}
+        />
+
+        {/* Domain 3: Leases Route */}
+        <Route
+          path="/leases"
+          element={session ? <Leases /> : <Navigate to="/auth" replace />}
         />
 
         {/* Root Route: Redirect based on authentication status */}

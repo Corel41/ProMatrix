@@ -7,10 +7,10 @@ import {
   LayoutDashboard,
   LogOut,
   ShieldCheck,
-  ChevronDown,
   Building,
   UserCheck,
-  Sparkles,
+  Layers,
+  FileText,
   MapPin
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -20,7 +20,6 @@ export default function Navbar({ activeContext }) {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [signingOut, setSigningOut] = useState(false)
-  const [dropdownOpen, setDropdownOpen] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -44,6 +43,9 @@ export default function Navbar({ activeContext }) {
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Landlords', path: '/landlords', icon: Users },
     { name: 'Properties', path: '/properties', icon: Home },
+    { name: 'Units', path: '/units', icon: Layers },
+    { name: 'Tenants', path: '/tenants', icon: UserCheck },
+    { name: 'Leases', path: '/leases', icon: FileText },
   ]
 
   return (
@@ -51,9 +53,9 @@ export default function Navbar({ activeContext }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Main Nav */}
-          <div className="flex items-center gap-8">
-            <Link to="/dashboard" className="flex items-center gap-3 group">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-transform">
+          <div className="flex items-center gap-6 xl:gap-8">
+            <Link to="/dashboard" className="flex items-center gap-3 group shrink-0">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-transform">
                 <Building2 className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -61,16 +63,15 @@ export default function Navbar({ activeContext }) {
                   <span className="font-bold text-lg tracking-tight font-mono text-white">
                     ProMatrix
                   </span>
-                  <span className="text-[10px] uppercase tracking-wider py-0.5 px-2 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 font-semibold font-mono">
+                  <span className="text-[10px] uppercase tracking-wider py-0.5 px-2 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 font-semibold font-mono hidden sm:inline-block">
                     Phase 2 Live
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 hidden sm:block">Enterprise Real Estate ERP</p>
               </div>
             </Link>
 
             {/* Navigation tabs */}
-            <nav className="hidden md:flex items-center gap-1.5">
+            <nav className="hidden lg:flex items-center gap-1">
               {navLinks.map((item) => {
                 const Icon = item.icon
                 const isActive = location.pathname === item.path
@@ -78,13 +79,13 @@ export default function Navbar({ activeContext }) {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                       isActive
                         ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                     }`}
                   >
-                    <Icon className={`h-4 w-4 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
+                    <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
                     <span>{item.name}</span>
                   </Link>
                 )
@@ -96,15 +97,15 @@ export default function Navbar({ activeContext }) {
           <div className="flex items-center gap-3">
             {/* Multi-Tenant Context Indicator */}
             {activeContext ? (
-              <div className="hidden lg:flex items-center gap-2 text-xs bg-slate-950/80 py-1.5 px-3 rounded-lg border border-slate-800">
+              <div className="hidden xl:flex items-center gap-2 text-xs bg-slate-950/80 py-1.5 px-3 rounded-lg border border-slate-800">
                 <Building className="h-3.5 w-3.5 text-indigo-400" />
-                <span className="font-medium text-slate-200">{activeContext.companyName}</span>
+                <span className="font-medium text-slate-200 truncate max-w-[150px]">{activeContext.companyName}</span>
                 <span className="text-slate-600">•</span>
                 <MapPin className="h-3 w-3 text-emerald-400" />
                 <span className="text-slate-400 font-mono text-[11px]">{activeContext.branchName}</span>
               </div>
             ) : (
-              <div className="hidden lg:flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 py-1 px-2.5 rounded-lg border border-emerald-500/20 font-mono">
+              <div className="hidden sm:flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 py-1 px-2.5 rounded-lg border border-emerald-500/20 font-mono">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 <span>RLS Context Enforced</span>
               </div>
@@ -117,9 +118,9 @@ export default function Navbar({ activeContext }) {
               </div>
               <div className="hidden sm:block text-left text-xs">
                 <p className="font-semibold text-slate-200 leading-tight">
-                  {user?.user_metadata?.full_name || 'Cornelius K.'}
+                  {user?.user_metadata?.full_name || 'System User'}
                 </p>
-                <p className="text-[11px] text-slate-500 leading-tight truncate max-w-[130px]">
+                <p className="text-[11px] text-slate-500 leading-tight truncate max-w-[120px]">
                   {user?.email}
                 </p>
               </div>
@@ -138,8 +139,8 @@ export default function Navbar({ activeContext }) {
           </div>
         </div>
 
-        {/* Mobile Navigation bar */}
-        <div className="flex md:hidden items-center justify-around py-2 border-t border-slate-800/60">
+        {/* Mobile / Tablet Navigation bar */}
+        <div className="flex lg:hidden items-center justify-around py-2 border-t border-slate-800/60 overflow-x-auto">
           {navLinks.map((item) => {
             const Icon = item.icon
             const isActive = location.pathname === item.path
@@ -147,11 +148,11 @@ export default function Navbar({ activeContext }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex flex-col items-center gap-1 py-1 px-3 text-[11px] font-medium ${
+                className={`flex flex-col items-center gap-1 py-1 px-2.5 text-[10px] font-medium whitespace-nowrap ${
                   isActive ? 'text-indigo-400' : 'text-slate-400'
                 }`}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-3.5 w-3.5" />
                 <span>{item.name}</span>
               </Link>
             )

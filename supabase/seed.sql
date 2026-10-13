@@ -106,6 +106,13 @@ BEGIN
         (v_ll_plot65, v_company_id, v_branch_id, 'L028', 'Njoroge', 'Alice Wanjiru', '28200037', 'A014829104Z', '+254727945129', 'alice.njoroge@yahoo.com', 'Absa Bank Kenya', 'Thika Branch', '0309284712', 'Alice Wanjiru Njoroge', 'eft', 'active', v_user_id)
     ON CONFLICT (company_id, landlord_no) DO NOTHING;
 
+    -- Fetch actual landlord IDs (in case they already exist)
+    SELECT id INTO v_ll_hazina FROM public.landlords WHERE landlord_no = 'L001' AND company_id = v_company_id;
+    SELECT id INTO v_ll_fariji FROM public.landlords WHERE landlord_no = 'L003' AND company_id = v_company_id;
+    SELECT id INTO v_ll_chimney FROM public.landlords WHERE landlord_no = 'L005' AND company_id = v_company_id;
+    SELECT id INTO v_ll_immanuel FROM public.landlords WHERE landlord_no = 'L007' AND company_id = v_company_id;
+    SELECT id INTO v_ll_plot65 FROM public.landlords WHERE landlord_no = 'L028' AND company_id = v_company_id;
+
     -- 7. Seed 10 Representative Properties from Thika DB
     INSERT INTO public.properties (
         id, company_id, branch_id, landlord_id, property_code, name, lr_number, property_type, location_description, city,
@@ -122,6 +129,11 @@ BEGIN
         (v_prop_beatrice, v_company_id, v_branch_id, v_ll_immanuel, 'BEATRICE-LANDLESS', 'Beatrice Court', 'LR-LANDLESS-PH3-27', 'residential', 'Landless Estate', 'Thika', 10.00, 'percentage', 'collected', TRUE, 10, 'Samuel Ndung''u', '+254728444666', 10, 0.00, 2, 'active', v_user_id),
         (v_prop_kiganjo, v_company_id, v_branch_id, v_ll_plot65, 'KIGANJO-RUHENI', 'Kiganjo Ruheni Heights', 'LR-KIGANJO-SEC4-18', 'residential', 'Kiganjo Town Center', 'Thika', 8.00, 'percentage', 'collected', TRUE, 10, 'David Mwangi', '+254729555777', 8, 500.00, 3, 'active', v_user_id)
     ON CONFLICT (branch_id, property_code) DO NOTHING;
+
+    -- Fetch actual property IDs (in case they already exist)
+    SELECT id INTO v_prop_hazina FROM public.properties WHERE property_code = 'HAZINA FLATS' AND branch_id = v_branch_id;
+    SELECT id INTO v_prop_immanuel FROM public.properties WHERE property_code = 'IMMANUEL APARTMENT' AND branch_id = v_branch_id;
+
 
     -- 8. Seed 20 Representative Units for Hazina Flats & Immanuel Apartments
     INSERT INTO public.units (
@@ -154,6 +166,67 @@ BEGIN
         (v_company_id, v_branch_id, v_prop_immanuel, 'C1', '3B', 'residential', '2nd Floor', 22000.00, 22000.00, 4000.00, 0.00, 700.00, 200.00, 'WM-IMM-005', 'KPLC-920105', FALSE, 'vacant', v_user_id)
     ON CONFLICT (property_id, unit_number) DO NOTHING;
 
+    -- 9. Seed 6 Representative Tenants from Thika DB
+    INSERT INTO public.tenants (
+        company_id, branch_id, tenant_no, full_name, id_or_passport_no, phone, email,
+        workplace, work_contact, next_of_kin_name, next_of_kin_phone, next_of_kin_relation,
+        status, date_registered, created_by
+    ) VALUES
+        (v_company_id, v_branch_id, 'T00358', 'Byrum Alophonce Ongaya', '29481920', '+254727485379', 'byrum.ongaya@gmail.com', 'Bidco Africa Ltd', '+254700111222', 'Eunice Ongaya', '+254711333444', 'Spouse', 'active', '2023-03-02', v_user_id),
+        (v_company_id, v_branch_id, 'T00364', 'Job Mugo Kahari', '28735965', '+254726353680', 'job.kahari@gmail.com', 'Del Monte Kenya', '+254700222333', 'Mercy Wanjiku', '+254722555666', 'Sister', 'active', '2023-01-03', v_user_id),
+        (v_company_id, v_branch_id, 'T01364', 'Miriam Delight Wangui', '38094297', '+254757917728', 'miriam.wangui@yahoo.com', 'Kenyatta University Thika Campus', '+254700333444', 'David Njoroge', '+254733444555', 'Father', 'active', '2023-03-24', v_user_id),
+        (v_company_id, v_branch_id, 'T00360', 'Kipyegon Geoffrey Koech', '31829471', '+254720987654', 'kipyegon.koech@gmail.com', 'Thika Level 5 Hospital', '+254700444555', 'Chebet Koech', '+254711888999', 'Spouse', 'active', '2023-03-02', v_user_id),
+        (v_company_id, v_branch_id, 'T00361', 'Robin Kagina Maina', '27491028', '+254712345678', 'robin.kagina@outlook.com', 'BAT Kenya - Thika Plant', '+254700555666', 'Grace Maina', '+254722111222', 'Mother', 'active', '2023-03-02', v_user_id),
+        (v_company_id, v_branch_id, 'T00362', 'Lucy Wairimu Gathong''a', '32910482', '+254728901234', 'lucy.gathonga@gmail.com', 'Broadway Bakeries Ltd', '+254700666777', 'Peter Gathong''a', '+254733222111', 'Brother', 'active', '2023-03-02', v_user_id)
+    ON CONFLICT (company_id, tenant_no) DO NOTHING;
+
+    -- 10. Seed Representative Active Leases for Occupied Units
+    INSERT INTO public.leases (
+        company_id, branch_id, property_id, unit_id, tenant_id,
+        lease_no, start_date, end_date, rent_pay_day, agreed_rent,
+        rent_deposit_held, water_deposit_held, elec_deposit_held,
+        service_charge_agreed, garbage_fee_agreed, escalation_rate,
+        escalation_period_months, status, created_by
+    )
+    SELECT
+        v_company_id, v_branch_id, u.property_id, u.id, t.id,
+        'LS-HZ-001', '2024-01-01', '2025-12-31', 5, 6500.00,
+        6500.00, 2500.00, 0.00, 100.00, 100.00, 5.00, 12, 'active', v_user_id
+    FROM public.units u, public.tenants t
+    WHERE u.property_id = v_prop_hazina AND u.unit_number = 'B1' AND t.tenant_no = 'T00358'
+    ON CONFLICT DO NOTHING;
+
+    INSERT INTO public.leases (
+        company_id, branch_id, property_id, unit_id, tenant_id,
+        lease_no, start_date, end_date, rent_pay_day, agreed_rent,
+        rent_deposit_held, water_deposit_held, elec_deposit_held,
+        service_charge_agreed, garbage_fee_agreed, escalation_rate,
+        escalation_period_months, status, created_by
+    )
+    SELECT
+        v_company_id, v_branch_id, u.property_id, u.id, t.id,
+        'LS-HZ-002', '2024-02-01', '2026-01-31', 5, 6500.00,
+        6500.00, 2500.00, 0.00, 100.00, 100.00, 5.00, 12, 'active', v_user_id
+    FROM public.units u, public.tenants t
+    WHERE u.property_id = v_prop_hazina AND u.unit_number = 'B2' AND t.tenant_no = 'T00364'
+    ON CONFLICT DO NOTHING;
+
+    INSERT INTO public.leases (
+        company_id, branch_id, property_id, unit_id, tenant_id,
+        lease_no, start_date, end_date, rent_pay_day, agreed_rent,
+        rent_deposit_held, water_deposit_held, elec_deposit_held,
+        service_charge_agreed, garbage_fee_agreed, escalation_rate,
+        escalation_period_months, status, created_by
+    )
+    SELECT
+        v_company_id, v_branch_id, u.property_id, u.id, t.id,
+        'LS-IMM-001', '2024-01-15', '2025-12-31', 5, 16000.00,
+        16000.00, 3000.00, 0.00, 500.00, 150.00, 10.00, 12, 'active', v_user_id
+    FROM public.units u, public.tenants t
+    WHERE u.property_id = v_prop_immanuel AND u.unit_number = 'A1' AND t.tenant_no = 'T01364'
+    ON CONFLICT DO NOTHING;
+
     RAISE NOTICE 'Seeding successfully completed for Company %, Branch %, User %', v_company_id, v_branch_id, v_user_id;
 END;
 $$;
+

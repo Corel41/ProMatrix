@@ -13,6 +13,9 @@ import {
   Activity,
   Plus,
   Compass,
+  FileText,
+  UserCheck,
+  TrendingUp,
   FileSpreadsheet
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -28,6 +31,8 @@ export default function Dashboard() {
     landlords: 0,
     properties: 0,
     units: 0,
+    tenants: 0,
+    leases: 0,
   })
 
   useEffect(() => {
@@ -44,16 +49,20 @@ export default function Dashboard() {
         setContext(tenant)
 
         // Query live counts under tenant's company
-        const [lRes, pRes, uRes] = await Promise.all([
+        const [lRes, pRes, uRes, tRes, leaseRes] = await Promise.all([
           supabase.from('landlords').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('properties').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('units').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
+          supabase.from('tenants').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
+          supabase.from('leases').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
         ])
 
         setStats({
           landlords: lRes.count || 0,
           properties: pRes.count || 0,
           units: uRes.count || 0,
+          tenants: tRes.count || 0,
+          leases: leaseRes.count || 0,
         })
       } catch (err) {
         console.error('Failed to load dashboard:', err)
@@ -87,7 +96,7 @@ export default function Dashboard() {
           <div className="relative z-10 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-3">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Phase 2 Database Live • Thika Dataset Seeded</span>
+              <span>Domains 1 & 3 Live • RLS Compound Isolation Enforced</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
               Welcome back, <span className="text-indigo-400">{user?.email}</span>
@@ -95,7 +104,7 @@ export default function Dashboard() {
             <p className="mt-2 text-sm text-slate-300 leading-relaxed">
               Your session is active in <strong>{context?.companyName}</strong> (Branch:{' '}
               <span className="font-mono text-indigo-400">{context?.branchName}</span>).
-              Multi-tenant Row-Level Security (RLS) is strictly isolating operational data.
+              Multi-tenant Row-Level Security (RLS) is strictly isolating operational data across all 22 Phase 2 tables.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-4 text-xs font-mono text-slate-400">
@@ -115,161 +124,244 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Live Operational Metrics from Thika Dataset */}
+        {/* Live Operational Metrics from Cloud Database */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-white flex items-center gap-2">
               <Activity className="h-4 w-4 text-indigo-400" />
-              <span>Domain 1: Core Registration Metrics</span>
+              <span>Real Estate Operational Metrics</span>
             </h2>
             <span className="text-xs text-slate-400 font-mono">Live Cloud DB Sync</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {/* Landlords Card */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all shadow-md group">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition-all shadow-md group">
               <div className="flex items-center justify-between">
-                <div className="h-10 w-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
-                  <Users className="h-5 w-5" />
+                <div className="h-9 w-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                  <Users className="h-4 w-4" />
                 </div>
                 <Link
                   to="/landlords"
                   className="text-slate-500 group-hover:text-indigo-400 transition-colors p-1"
                 >
-                  <ArrowUpRight className="h-4 w-4" />
+                  <ArrowUpRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
-              <div className="mt-4">
-                <p className="text-xs text-slate-400 font-medium">Beneficial Landlords</p>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl font-bold font-mono text-white">{stats.landlords}</span>
-                  <span className="text-xs text-emerald-400 font-mono">Registered</span>
+              <div className="mt-3">
+                <p className="text-[11px] text-slate-400 font-medium">Landlords</p>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className="text-2xl font-bold font-mono text-white">{stats.landlords}</span>
+                  <span className="text-[10px] text-emerald-400 font-mono">Owners</span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">
-                  Includes Hazina Investment, Muthende, Wachira, Mbuguah, Njoroge
-                </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+              <div className="mt-3 pt-2.5 border-t border-slate-800/80">
                 <Link
                   to="/landlords"
-                  className="text-xs text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center gap-1"
+                  className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center gap-1"
                 >
-                  <span>Manage Landlords</span>
+                  <span>View Register</span>
                   <ArrowUpRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>
 
             {/* Properties Card */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all shadow-md group">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition-all shadow-md group">
               <div className="flex items-center justify-between">
-                <div className="h-10 w-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                  <Home className="h-5 w-5" />
+                <div className="h-9 w-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <Home className="h-4 w-4" />
                 </div>
                 <Link
                   to="/properties"
                   className="text-slate-500 group-hover:text-emerald-400 transition-colors p-1"
                 >
-                  <ArrowUpRight className="h-4 w-4" />
+                  <ArrowUpRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
-              <div className="mt-4">
-                <p className="text-xs text-slate-400 font-medium">Properties & Estates</p>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl font-bold font-mono text-white">{stats.properties}</span>
-                  <span className="text-xs text-emerald-400 font-mono">Active</span>
+              <div className="mt-3">
+                <p className="text-[11px] text-slate-400 font-medium">Properties</p>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className="text-2xl font-bold font-mono text-white">{stats.properties}</span>
+                  <span className="text-[10px] text-emerald-400 font-mono">Estates</span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">
-                  Hazina Flats, Fariji House, Immanuel Apartments, Plot 65, etc.
-                </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+              <div className="mt-3 pt-2.5 border-t border-slate-800/80">
                 <Link
                   to="/properties"
-                  className="text-xs text-emerald-400 hover:text-emerald-300 font-medium inline-flex items-center gap-1"
+                  className="text-[11px] text-emerald-400 hover:text-emerald-300 font-medium inline-flex items-center gap-1"
                 >
-                  <span>Manage Properties</span>
+                  <span>Manage Estates</span>
                   <ArrowUpRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>
 
             {/* Units Card */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all shadow-md">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition-all shadow-md group">
               <div className="flex items-center justify-between">
-                <div className="h-10 w-10 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
-                  <Layers className="h-5 w-5" />
+                <div className="h-9 w-9 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <Layers className="h-4 w-4" />
                 </div>
-                <span className="text-[10px] font-mono py-0.5 px-2 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
-                  Ready for Domain 2
-                </span>
+                <Link
+                  to="/units"
+                  className="text-slate-500 group-hover:text-amber-400 transition-colors p-1"
+                >
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
-              <div className="mt-4">
-                <p className="text-xs text-slate-400 font-medium">Units & Spaces</p>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl font-bold font-mono text-white">{stats.units}</span>
-                  <span className="text-xs text-amber-400 font-mono">Seeded</span>
+              <div className="mt-3">
+                <p className="text-[11px] text-slate-400 font-medium">Rental Units</p>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className="text-2xl font-bold font-mono text-white">{stats.units}</span>
+                  <span className="text-[10px] text-amber-400 font-mono">Spaces</span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">
-                  Units across Hazina Flats (HZ01-HZ10) & Immanuel (IM01-IM10)
-                </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-                <span>Leasing & Tenants next</span>
-                <Compass className="h-3.5 w-3.5 text-slate-500" />
+              <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+                <Link
+                  to="/units"
+                  className="text-[11px] text-amber-400 hover:text-amber-300 font-medium inline-flex items-center gap-1"
+                >
+                  <span>Units Inventory</span>
+                  <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Tenants Card */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition-all shadow-md group">
+              <div className="flex items-center justify-between">
+                <div className="h-9 w-9 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center">
+                  <UserCheck className="h-4 w-4" />
+                </div>
+                <Link
+                  to="/tenants"
+                  className="text-slate-500 group-hover:text-sky-400 transition-colors p-1"
+                >
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+              <div className="mt-3">
+                <p className="text-[11px] text-slate-400 font-medium">Tenants</p>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className="text-2xl font-bold font-mono text-white">{stats.tenants}</span>
+                  <span className="text-[10px] text-sky-400 font-mono">Occupants</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+                <Link
+                  to="/tenants"
+                  className="text-[11px] text-sky-400 hover:text-sky-300 font-medium inline-flex items-center gap-1"
+                >
+                  <span>Tenants KYC</span>
+                  <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Leases Card */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition-all shadow-md group">
+              <div className="flex items-center justify-between">
+                <div className="h-9 w-9 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+                  <FileText className="h-4 w-4" />
+                </div>
+                <Link
+                  to="/leases"
+                  className="text-slate-500 group-hover:text-purple-400 transition-colors p-1"
+                >
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+              <div className="mt-3">
+                <p className="text-[11px] text-slate-400 font-medium">Active Leases</p>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className="text-2xl font-bold font-mono text-white">{stats.leases}</span>
+                  <span className="text-[10px] text-purple-400 font-mono">Contracts</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+                <Link
+                  to="/leases"
+                  className="text-[11px] text-purple-400 hover:text-purple-300 font-medium inline-flex items-center gap-1"
+                >
+                  <span>Lease Registry</span>
+                  <ArrowUpRight className="h-3 w-3" />
+                </Link>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Quick Operations & Navigation Launchpad */}
+        {/* Quick Operations Launchpad */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
             <Compass className="h-4 w-4 text-indigo-400" />
             <span>Operational Navigation Launchpad</span>
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-indigo-500/40 transition-all flex flex-col justify-between">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Units Card */}
+            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-amber-500/40 transition-all flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
-                  <Users className="h-4 w-4" />
-                  <span>Landlords Register & Banking Setup</span>
+                <div className="flex items-center gap-2 text-amber-400 font-semibold text-sm">
+                  <Layers className="h-4 w-4" />
+                  <span>Rental Units & Meter Inventory</span>
                 </div>
                 <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
-                  View and register property owners, KRA tax PINs, electronic funds transfer (EFT)
-                  routing numbers, and M-Pesa paybill accounts.
+                  Configure bedsitters, 1B, 2B, shops, floor levels, water meters, and base rent rates.
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between">
                 <Link
-                  to="/landlords"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600 hover:text-white transition-all"
+                  to="/units"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-600/20 text-amber-300 border border-amber-500/30 hover:bg-amber-600 hover:text-white transition-all"
                 >
                   <Plus className="h-3 w-3" />
-                  <span>Open Landlords Register</span>
+                  <span>Open Units Inventory</span>
                 </Link>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-emerald-500/40 transition-all flex flex-col justify-between">
+            {/* Tenants Card */}
+            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-sky-500/40 transition-all flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
-                  <Home className="h-4 w-4" />
-                  <span>Property Portfolio & LR Registry</span>
+                <div className="flex items-center gap-2 text-sky-400 font-semibold text-sm">
+                  <UserCheck className="h-4 w-4" />
+                  <span>Tenants & Occupants KYC</span>
                 </div>
                 <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
-                  Manage building codes, LR titles, commission percentage arrangements, monthly
-                  remittance schedules, and on-site caretaking contacts.
+                  Register tenant identities, national ID/passports, workplace contacts, and next of kin.
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between">
                 <Link
-                  to="/properties"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600 hover:text-white transition-all"
+                  to="/tenants"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-sky-600/20 text-sky-300 border border-sky-500/30 hover:bg-sky-600 hover:text-white transition-all"
                 >
                   <Plus className="h-3 w-3" />
-                  <span>Open Properties Portfolio</span>
+                  <span>Open Tenants Registry</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Leases Card */}
+            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-purple-500/40 transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-purple-400 font-semibold text-sm">
+                  <FileText className="h-4 w-4" />
+                  <span>Lease Contracts Junction</span>
+                </div>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                  Bind tenants to units with agreed rent, security deposits held, and escalation terms.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between">
+                <Link
+                  to="/leases"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600 hover:text-white transition-all"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>Manage Leases</span>
                 </Link>
               </div>
             </div>
@@ -286,25 +378,25 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-950/60 border border-slate-800/80">
               <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
               <span className="text-slate-300 text-xs">
-                Row-Level Security (RLS) active on all 22 Phase 2 tables
+                Row-Level Security (RLS) active on units, tenants, and leases
               </span>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-950/60 border border-slate-800/80">
               <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
               <span className="text-slate-300 text-xs">
-                Compound Foreign Keys enforce strict company/branch isolation
+                Compound Foreign Keys guarantee a lease cannot link Unit A with Company B
               </span>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-950/60 border border-slate-800/80">
               <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
               <span className="text-slate-300 text-xs">
-                Authoritative Audit Trail trigger active on all operational mutations
+                Unique active unit exclusion prevents double-leasing of the same unit
               </span>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-950/60 border border-slate-800/80">
               <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
               <span className="text-slate-300 text-xs">
-                Authenticated session bound to {context?.companyName}
+                Immutable audit log triggers on all occupancy and tenancy mutations
               </span>
             </div>
           </div>
