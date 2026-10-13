@@ -13,7 +13,8 @@ import {
   FileText,
   MapPin,
   Receipt,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Droplets
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
@@ -48,6 +49,7 @@ export default function Navbar({ activeContext }) {
     { name: 'Units', path: '/units', icon: Layers },
     { name: 'Tenants', path: '/tenants', icon: UserCheck },
     { name: 'Leases', path: '/leases', icon: FileText },
+    { name: 'Water Meters', path: '/meter-readings', icon: Droplets },
     { name: 'Receipting', path: '/receipting', icon: Receipt },
     { name: 'Statements', path: '/statements', icon: FileSpreadsheet },
   ]

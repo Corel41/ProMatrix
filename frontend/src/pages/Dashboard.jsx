@@ -18,7 +18,8 @@ import {
   TrendingUp,
   FileSpreadsheet,
   Receipt,
-  CreditCard
+  CreditCard,
+  Droplets
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { getTenantContext } from '../lib/tenantContext'
@@ -35,6 +36,7 @@ export default function Dashboard() {
     units: 0,
     tenants: 0,
     leases: 0,
+    meters: 0,
     transactions: 0,
   })
 
@@ -52,12 +54,13 @@ export default function Dashboard() {
         setContext(tenant)
 
         // Query live counts under tenant's company
-        const [lRes, pRes, uRes, tRes, leaseRes, txRes] = await Promise.all([
+        const [lRes, pRes, uRes, tRes, leaseRes, mRes, txRes] = await Promise.all([
           supabase.from('landlords').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('properties').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('units').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('tenants').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('leases').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
+          supabase.from('utility_meters').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('financial_transactions').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
         ])
 
@@ -67,6 +70,7 @@ export default function Dashboard() {
           units: uRes.count || 0,
           tenants: tRes.count || 0,
           leases: leaseRes.count || 0,
+          meters: mRes.count || 0,
           transactions: txRes.count || 0,
         })
       } catch (err) {
@@ -101,7 +105,7 @@ export default function Dashboard() {
           <div className="relative z-10 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-3">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Domains 1, 3 & 5 Live • Financial Ledger & RLS Isolation Enforced</span>
+              <span>Domains 1, 3, 4 & 5 Live • Meter Billing & Financial Ledger Enforced</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
               Welcome back, <span className="text-indigo-400">{user?.email}</span>
@@ -398,6 +402,28 @@ export default function Dashboard() {
                 >
                   <Plus className="h-3 w-3" />
                   <span>Manage Leases</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Utility Meter Readings Card */}
+            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-sky-500/40 transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-sky-400 font-semibold text-sm">
+                  <Droplets className="h-4 w-4" />
+                  <span>Water Meter Readings (Domain 4)</span>
+                </div>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                  Capture monthly water meter readings, compute consumption, and auto-calculate tenant utility bills.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between">
+                <Link
+                  to="/meter-readings"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-sky-600/20 text-sky-300 border border-sky-500/30 hover:bg-sky-600 hover:text-white transition-all"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>Open Meter Readings</span>
                 </Link>
               </div>
             </div>

@@ -10,6 +10,7 @@ import Tenants from './pages/Tenants'
 import Leases from './pages/Leases'
 import Receipting from './pages/Receipting'
 import TenantStatements from './pages/TenantStatements'
+import MeterReadings from './pages/MeterReadings'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -87,6 +88,12 @@ export default function App() {
         <Route
           path="/leases"
           element={session ? <Leases /> : <Navigate to="/auth" replace />}
+        />
+
+        {/* Domain 4: Utility Meter Readings */}
+        <Route
+          path="/meter-readings"
+          element={session ? <MeterReadings /> : <Navigate to="/auth" replace />}
         />
 
         {/* Domain 5: Financial Ledger & Receipting */}
