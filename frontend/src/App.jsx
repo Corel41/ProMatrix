@@ -11,6 +11,7 @@ import Leases from './pages/Leases'
 import Receipting from './pages/Receipting'
 import TenantStatements from './pages/TenantStatements'
 import MeterReadings from './pages/MeterReadings'
+import Communications from './pages/Communications'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -106,6 +107,12 @@ export default function App() {
         <Route
           path="/statements"
           element={session ? <TenantStatements /> : <Navigate to="/auth" replace />}
+        />
+
+        {/* Domain 6: Communications & Bulk SMS */}
+        <Route
+          path="/communications"
+          element={session ? <Communications /> : <Navigate to="/auth" replace />}
         />
 
         {/* Root Route: Redirect based on authentication status */}

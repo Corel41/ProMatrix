@@ -321,6 +321,16 @@ BEGIN
         ON CONFLICT DO NOTHING;
     END IF;
 
+    -- 13. Seed Sample Historical Communication Logs
+    INSERT INTO public.communication_logs (
+        company_id, branch_id, tenant_id, channel, recipient_destination, message_type, message_content,
+        status, external_gateway_id, sent_at, created_by
+    ) VALUES
+        (v_company_id, v_branch_id, v_t_byrum, 'sms', '+254727485379', 'credit_receipt', 'Dear Byrum Ongaya, payment of KES 6,600 for Unit B1 (Hazina Flats) has been received and credited to your ledger. Receipt: REC-2026-09-041. ProMatrix Mgmt.', 'delivered', 'AT-SMS-982140', NOW() - INTERVAL '30 days', v_user_id),
+        (v_company_id, v_branch_id, v_t_job, 'sms', '+254726353680', 'rent_due_reminder', 'Dear Job Kahari, this is a friendly reminder that October rent of KES 6,500 for Unit B2 is due by the 5th. Kindly settle on time. Thank you.', 'delivered', 'AT-SMS-982141', NOW() - INTERVAL '12 days', v_user_id),
+        (v_company_id, v_branch_id, v_t_miriam, 'sms', '+254757917728', 'general_broadcast', 'Dear Miriam Wangui, please be notified that power maintenance by KPLC is scheduled for Immanuel Apartments tomorrow between 9am and 2pm. ProMatrix Mgmt.', 'sent', 'AT-SMS-982142', NOW() - INTERVAL '3 days', v_user_id)
+    ON CONFLICT DO NOTHING;
+
     RAISE NOTICE 'Seeding successfully completed for Company %, Branch %, User %', v_company_id, v_branch_id, v_user_id;
 END;
 

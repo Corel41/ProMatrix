@@ -19,7 +19,8 @@ import {
   FileSpreadsheet,
   Receipt,
   CreditCard,
-  Droplets
+  Droplets,
+  MessageSquare
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { getTenantContext } from '../lib/tenantContext'
@@ -38,6 +39,7 @@ export default function Dashboard() {
     leases: 0,
     meters: 0,
     transactions: 0,
+    messages: 0,
   })
 
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function Dashboard() {
         setContext(tenant)
 
         // Query live counts under tenant's company
-        const [lRes, pRes, uRes, tRes, leaseRes, mRes, txRes] = await Promise.all([
+        const [lRes, pRes, uRes, tRes, leaseRes, mRes, txRes, msgRes] = await Promise.all([
           supabase.from('landlords').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('properties').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('units').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
@@ -62,6 +64,7 @@ export default function Dashboard() {
           supabase.from('leases').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('utility_meters').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
           supabase.from('financial_transactions').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
+          supabase.from('communication_logs').select('*', { count: 'exact', head: true }).eq('company_id', tenant.companyId),
         ])
 
         setStats({
@@ -72,6 +75,7 @@ export default function Dashboard() {
           leases: leaseRes.count || 0,
           meters: mRes.count || 0,
           transactions: txRes.count || 0,
+          messages: msgRes.count || 0,
         })
       } catch (err) {
         console.error('Failed to load dashboard:', err)
@@ -105,7 +109,7 @@ export default function Dashboard() {
           <div className="relative z-10 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-3">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Domains 1, 3, 4 & 5 Live • Meter Billing & Financial Ledger Enforced</span>
+              <span>Domains 1 to 6 Live • Communications, Meter Billing & Ledger Enforced</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
               Welcome back, <span className="text-indigo-400">{user?.email}</span>
@@ -468,6 +472,28 @@ export default function Dashboard() {
                 >
                   <Plus className="h-3 w-3" />
                   <span>View Statements</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Communications & Bulk SMS Card */}
+            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-indigo-500/40 transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Communications & Bulk SMS (Domain 6)</span>
+                </div>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                  Send single client SMS alerts, estate-wide bulk broadcasts, and inspect telco gateway delivery logs.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between">
+                <Link
+                  to="/communications"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600 hover:text-white transition-all"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>Open Communications</span>
                 </Link>
               </div>
             </div>
