@@ -158,25 +158,25 @@ export default function Landlords() {
   })
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-surface-950 text-surface-100 flex flex-col selection:bg-brand-500/20 selection:text-brand-300">
       <Navbar activeContext={context} />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         {/* Header Breadcrumb & Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-mono text-indigo-400 mb-1">
+            <div className="flex items-center gap-2 text-xs font-mono text-brand-400 mb-1.5">
               <span>Domain 1</span>
-              <ChevronRight className="h-3 w-3 text-slate-600" />
+              <ChevronRight className="h-3 w-3 text-surface-600" />
               <span>Core Registration</span>
-              <ChevronRight className="h-3 w-3 text-slate-600" />
-              <span className="text-slate-300">Landlords</span>
+              <ChevronRight className="h-3 w-3 text-surface-600" />
+              <span className="text-surface-300 font-medium">Landlords Registry</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-              <Users className="h-7 w-7 text-indigo-400" />
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3 font-sans">
+              <Users className="h-7 w-7 text-brand-400" />
               <span>Beneficial Owners & Landlords</span>
             </h1>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-surface-400">
               Manage landlord profiles, banking details, remittance preferences, and tax credentials.
             </p>
           </div>
@@ -185,7 +185,7 @@ export default function Landlords() {
             <button
               onClick={loadData}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-surface-900 hover:bg-surface-850 text-surface-300 border border-surface-800 transition-all cursor-pointer shadow-card"
               title="Refresh list"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -198,7 +198,7 @@ export default function Landlords() {
                 setSuccessMsg('')
                 setShowModal(true)
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white shadow-soft shadow-brand-600/25 active:scale-[0.99] transition-all cursor-pointer"
             >
               <Plus className="h-4 w-4" />
               <span>Register Landlord</span>
@@ -208,53 +208,53 @@ export default function Landlords() {
 
         {/* Feedback Alerts */}
         {errorMsg && (
-          <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-sm flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
+          <div className="p-4 rounded-2xl bg-coral-950/30 border border-coral-500/30 text-coral-300 text-xs flex items-start gap-3 shadow-card">
+            <AlertCircle className="h-4 w-4 text-coral-400 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-semibold">Operation Error</p>
-              <p className="text-xs text-rose-300/90 mt-0.5">{errorMsg}</p>
+              <p className="font-semibold text-coral-200">Operation Error</p>
+              <p className="mt-0.5">{errorMsg}</p>
             </div>
-            <button onClick={() => setErrorMsg('')} className="text-rose-400 hover:text-rose-200">
+            <button onClick={() => setErrorMsg('')} className="text-coral-400 hover:text-coral-200">
               <X className="h-4 w-4" />
             </button>
           </div>
         )}
 
         {successMsg && (
-          <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 text-sm flex items-start gap-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+          <div className="p-4 rounded-2xl bg-mint-950/30 border border-mint-500/30 text-mint-300 text-xs flex items-start gap-3 shadow-card">
+            <CheckCircle2 className="h-4 w-4 text-mint-400 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-semibold">Success</p>
-              <p className="text-xs text-emerald-300/90 mt-0.5">{successMsg}</p>
+              <p className="font-semibold text-mint-200">Success</p>
+              <p className="mt-0.5">{successMsg}</p>
             </div>
-            <button onClick={() => setSuccessMsg('')} className="text-emerald-400 hover:text-emerald-200">
+            <button onClick={() => setSuccessMsg('')} className="text-mint-400 hover:text-mint-200">
               <X className="h-4 w-4" />
             </button>
           </div>
         )}
 
         {/* Filter & Search Bar */}
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-surface-900/60 p-4 rounded-2xl border border-surface-800/80 shadow-card">
           <div className="relative w-full sm:w-96">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-surface-500" />
             <input
               type="text"
               placeholder="Search by code, surname, phone, KRA PIN..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-950/90 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full bg-surface-950 border border-surface-800 rounded-xl pl-9 pr-3 py-2 text-xs text-surface-200 placeholder-surface-500 focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
             />
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            <div className="flex items-center gap-1.5 text-xs text-slate-400">
-              <Filter className="h-3.5 w-3.5 text-slate-500" />
+            <div className="flex items-center gap-1.5 text-xs text-surface-400">
+              <Filter className="h-3.5 w-3.5 text-surface-500" />
               <span>Status:</span>
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500"
+              className="bg-surface-950 border border-surface-800 text-xs text-surface-300 rounded-xl px-3 py-2 focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 font-medium"
             >
               <option value="all">All Statuses</option>
               <option value="active">Active</option>
@@ -265,34 +265,34 @@ export default function Landlords() {
         </div>
 
         {/* Landlords Data Grid */}
-        <div className="bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+        <div className="bg-surface-900/60 border border-surface-800/80 rounded-3xl overflow-hidden shadow-card">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/90 text-slate-400 font-semibold uppercase tracking-wider font-mono">
-                  <th className="py-3 px-4">Code</th>
-                  <th className="py-3 px-4">Landlord / Owner Name</th>
-                  <th className="py-3 px-4">ID / Reg No</th>
-                  <th className="py-3 px-4">KRA PIN</th>
-                  <th className="py-3 px-4">Phone & Email</th>
-                  <th className="py-3 px-4">Bank & Account</th>
-                  <th className="py-3 px-4">Remittance</th>
-                  <th className="py-3 px-4">Status</th>
+                <tr className="border-b border-surface-800/80 bg-surface-950/70 text-surface-400 font-medium uppercase tracking-wider font-mono text-[11px]">
+                  <th className="py-3.5 px-4">Code</th>
+                  <th className="py-3.5 px-4">Landlord / Owner Name</th>
+                  <th className="py-3.5 px-4">ID / Reg No</th>
+                  <th className="py-3.5 px-4">KRA PIN</th>
+                  <th className="py-3.5 px-4">Phone & Email</th>
+                  <th className="py-3.5 px-4">Bank & Account</th>
+                  <th className="py-3.5 px-4">Remittance</th>
+                  <th className="py-3.5 px-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-sans">
+              <tbody className="divide-y divide-surface-850/60 font-sans">
                 {loading ? (
                   <tr>
-                    <td colSpan="8" className="py-12 text-center text-slate-500">
+                    <td colSpan="8" className="py-16 text-center text-surface-500">
                       <div className="flex flex-col items-center gap-2">
-                        <div className="h-6 w-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                        <span>Querying landlords from cloud DB...</span>
+                        <div className="h-6 w-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs font-mono">Querying landlords from cloud DB...</span>
                       </div>
                     </td>
                   </tr>
                 ) : filteredLandlords.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="py-12 text-center text-slate-500">
+                    <td colSpan="8" className="py-16 text-center text-surface-500">
                       No landlords found matching your search.
                     </td>
                   </tr>
@@ -300,42 +300,42 @@ export default function Landlords() {
                   filteredLandlords.map((landlord) => (
                     <tr
                       key={landlord.id}
-                      className="hover:bg-slate-800/40 transition-colors group text-slate-300"
+                      className="even:bg-surface-900/40 odd:bg-surface-950/20 hover:bg-surface-850/50 transition-colors text-surface-300"
                     >
-                      <td className="py-3 px-4 font-mono font-bold text-indigo-400 whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-mono font-bold text-brand-300 whitespace-nowrap">
                         {landlord.landlord_no}
                       </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="font-semibold text-slate-100">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="font-semibold text-surface-100">
                           {landlord.surname}
                         </div>
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-[11px] text-surface-400">
                           {landlord.other_names}
                         </div>
                       </td>
-                      <td className="py-3 px-4 font-mono text-slate-400 whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-mono text-surface-400 whitespace-nowrap">
                         {landlord.id_or_registration_no || '—'}
                       </td>
-                      <td className="py-3 px-4 font-mono text-slate-300 whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-mono text-surface-300 whitespace-nowrap">
                         {landlord.tax_pin || '—'}
                       </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5 text-slate-300 font-mono">
-                          <Phone className="h-3 w-3 text-slate-500" />
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 text-surface-300 font-mono">
+                          <Phone className="h-3 w-3 text-surface-500" />
                           <span>{landlord.phone}</span>
                         </div>
                         {landlord.email && (
-                          <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
-                            <Mail className="h-3 w-3 text-slate-500" />
+                          <div className="flex items-center gap-1.5 text-[11px] text-surface-400 mt-0.5">
+                            <Mail className="h-3 w-3 text-surface-500" />
                             <span>{landlord.email}</span>
                           </div>
                         )}
                       </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="font-medium text-slate-200">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="font-medium text-surface-200">
                           {landlord.bank_name || 'No Bank Set'}
                         </div>
-                        <div className="text-[11px] text-slate-400 font-mono">
+                        <div className="text-[11px] text-surface-400 font-mono">
                           {landlord.bank_account_no
                             ? `A/C: ${landlord.bank_account_no}`
                             : landlord.mpesa_phone
@@ -343,20 +343,21 @@ export default function Landlords() {
                             : '—'}
                         </div>
                       </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-mono bg-slate-800 text-indigo-300 border border-slate-700">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider font-mono bg-surface-800 text-brand-300 border border-surface-700">
                           {landlord.remittance_mode || 'EFT'}
                         </span>
                       </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider font-mono ${
                             landlord.status === 'active'
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              ? 'bg-mint-950/40 text-mint-400 border border-mint-500/20'
+                              : 'bg-honey-950/40 text-honey-400 border border-honey-500/20'
                           }`}
                         >
-                          {landlord.status}
+                          <span className="h-1.5 w-1.5 rounded-full bg-current mr-1.5" />
+                          <span>{landlord.status}</span>
                         </span>
                       </td>
                     </tr>
@@ -366,13 +367,13 @@ export default function Landlords() {
             </table>
           </div>
 
-          <div className="bg-slate-950/60 px-4 py-3 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+          <div className="bg-surface-950/70 px-5 py-3.5 border-t border-surface-800/80 text-xs text-surface-400 flex items-center justify-between">
             <span>
-              Showing <strong className="text-slate-200">{filteredLandlords.length}</strong> of{' '}
-              <strong className="text-slate-200">{landlords.length}</strong> total registered owners
+              Showing <strong className="text-surface-200">{filteredLandlords.length}</strong> of{' '}
+              <strong className="text-surface-200">{landlords.length}</strong> total registered owners
             </span>
-            <div className="flex items-center gap-2 font-mono text-[11px] text-slate-500">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+            <div className="flex items-center gap-2 font-mono text-[11px] text-surface-500">
+              <ShieldCheck className="h-3.5 w-3.5 text-mint-400" />
               <span>Multi-tenant Isolation: {context?.branchCode}</span>
             </div>
           </div>
@@ -381,23 +382,23 @@ export default function Landlords() {
 
       {/* Registration Modal Dialog */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl my-8 overflow-hidden shadow-2xl flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/75 backdrop-blur-md overflow-y-auto">
+          <div className="bg-surface-900 border border-surface-800 rounded-3xl w-full max-w-2xl my-8 overflow-hidden shadow-elevated flex flex-col">
+            <div className="px-6 py-4.5 border-b border-surface-800 flex items-center justify-between bg-surface-900/90">
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
-                  <Users className="h-4 w-4" />
+                <div className="h-9 w-9 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center shadow-card">
+                  <Users className="h-4.5 w-4.5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Register Beneficial Landlord</h3>
-                  <p className="text-xs text-slate-400">
+                  <h3 className="text-base font-bold text-white font-sans">Register Beneficial Landlord</h3>
+                  <p className="text-xs text-surface-400">
                     Creates an authoritative record in {context?.branchName}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+                className="text-surface-400 hover:text-white p-1.5 rounded-xl hover:bg-surface-800 transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -406,13 +407,13 @@ export default function Landlords() {
             <form onSubmit={handleSubmit} className="p-6 space-y-5 flex-1 overflow-y-auto max-h-[75vh]">
               {/* Section 1: Core Identity */}
               <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono mb-3">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-400 font-mono mb-3">
                   1. Identification & Names
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Landlord No <span className="text-rose-400">*</span>
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
+                      Landlord No <span className="text-coral-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -421,12 +422,12 @@ export default function Landlords() {
                       placeholder="e.g. L029"
                       value={formData.landlord_no}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white uppercase font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white uppercase font-mono focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Surname / Company <span className="text-rose-400">*</span>
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
+                      Surname / Company <span className="text-coral-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -435,12 +436,12 @@ export default function Landlords() {
                       placeholder="e.g. Wanjiru"
                       value={formData.surname}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Other Names <span className="text-rose-400">*</span>
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
+                      Other Names <span className="text-coral-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -449,14 +450,14 @@ export default function Landlords() {
                       placeholder="e.g. Grace Njoki"
                       value={formData.other_names}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
                       National ID / Reg No
                     </label>
                     <input
@@ -465,11 +466,11 @@ export default function Landlords() {
                       placeholder="e.g. 23910284"
                       value={formData.id_or_registration_no}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
                       KRA Tax PIN
                     </label>
                     <input
@@ -478,21 +479,21 @@ export default function Landlords() {
                       placeholder="e.g. A001928374B"
                       value={formData.tax_pin}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white uppercase font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white uppercase font-mono focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Section 2: Contact Information */}
-              <div className="pt-3 border-t border-slate-800/80">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono mb-3">
+              <div className="pt-3 border-t border-surface-800">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-400 font-mono mb-3">
                   2. Contact & Communications
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Primary Phone <span className="text-rose-400">*</span>
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
+                      Primary Phone <span className="text-coral-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -501,11 +502,11 @@ export default function Landlords() {
                       placeholder="e.g. +254712345678"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
                       Email Address
                     </label>
                     <input
@@ -514,27 +515,27 @@ export default function Landlords() {
                       placeholder="e.g. landlord@example.com"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Section 3: Remittance & Banking Details */}
-              <div className="pt-3 border-t border-slate-800/80">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono mb-3">
+              <div className="pt-3 border-t border-surface-800">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-400 font-mono mb-3">
                   3. Remittance & Settlement Setup
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
                       Remittance Mode
                     </label>
                     <select
                       name="remittance_mode"
                       value={formData.remittance_mode}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all font-medium"
                     >
                       <option value="eft">EFT (Electronic Funds Transfer)</option>
                       <option value="rtgs">RTGS (Real Time Gross Settlement)</option>
@@ -543,7 +544,7 @@ export default function Landlords() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
                       Bank Name
                     </label>
                     <input
@@ -552,14 +553,14 @@ export default function Landlords() {
                       placeholder="e.g. Equity Bank, KCB Bank"
                       value={formData.bank_name}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
                       Bank Branch
                     </label>
                     <input
@@ -568,11 +569,11 @@ export default function Landlords() {
                       placeholder="e.g. Thika Supreme"
                       value={formData.bank_branch}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
                       Account Number
                     </label>
                     <input
@@ -581,11 +582,11 @@ export default function Landlords() {
                       placeholder="e.g. 0110293847"
                       value={formData.bank_account_no}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
                       Account Name
                     </label>
                     <input
@@ -594,14 +595,14 @@ export default function Landlords() {
                       placeholder="e.g. Grace Wanjiru Njoki"
                       value={formData.bank_account_name}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
                       M-Pesa Disbursal Phone
                     </label>
                     <input
@@ -610,18 +611,18 @@ export default function Landlords() {
                       placeholder="e.g. +254712345678"
                       value={formData.mpesa_phone}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                    <label className="block text-xs font-medium text-surface-300 mb-1">
                       Account Status
                     </label>
                     <select
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-surface-950 border border-surface-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15 transition-all font-medium"
                     >
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
@@ -631,27 +632,27 @@ export default function Landlords() {
               </div>
 
               {/* Multi-Tenant Audit Notice */}
-              <div className="p-3 rounded-lg bg-indigo-950/30 border border-indigo-800/40 text-xs text-indigo-300 flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-indigo-400 shrink-0" />
+              <div className="p-3.5 rounded-2xl bg-brand-950/40 border border-brand-500/20 text-xs text-brand-300 flex items-center gap-2.5">
+                <ShieldCheck className="h-4 w-4 text-brand-400 shrink-0" />
                 <span>
                   This landlord will be bound to <strong>{context?.companyName}</strong> (Branch: <strong>{context?.branchCode}</strong>).
                 </span>
               </div>
 
               {/* Submit Buttons */}
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-3">
+              <div className="pt-3 border-t border-surface-800 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
                   disabled={submitting}
-                  className="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2.5 rounded-xl text-xs font-medium text-surface-400 hover:text-white hover:bg-surface-800 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white shadow-soft shadow-brand-600/25 transition-all cursor-pointer"
                 >
                   {submitting ? (
                     <>

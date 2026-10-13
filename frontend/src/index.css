@@ -1,3 +1,78 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: #0f0f12;
+    color: #f4f4f5;
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Sleek minimalist scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+  }
+}
+
+@layer components {
+  /* Minimalist Card */
+  .card-minimal {
+    @apply bg-surface-900/80 border border-surface-800/80 rounded-2xl shadow-card transition-all duration-200;
+  }
+
+  .card-minimal:hover {
+    @apply border-surface-700/80 shadow-soft;
+  }
+
+  /* Form Input Styling with Soft Focus Rings */
+  .input-minimal {
+    @apply bg-surface-950/80 border border-surface-800 text-surface-100 rounded-xl px-3.5 py-2 text-xs transition-all duration-200 placeholder:text-surface-500 focus:outline-none focus:border-brand-500/80 focus:ring-2 focus:ring-brand-500/15;
+  }
+
+  /* Modern Action Button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white shadow-soft shadow-brand-600/20 active:scale-[0.99] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-surface-800/70 hover:bg-surface-800 text-surface-200 border border-surface-700/60 active:scale-[0.99] transition-all duration-200 cursor-pointer;
+  }
+
+  /* Table styling */
+  .table-clean th {
+    @apply py-3 px-4 text-xs font-mono font-medium uppercase tracking-wider text-surface-400 bg-surface-950/60 border-b border-surface-800/80;
+  }
+
+  .table-clean td {
+    @apply py-3 px-4 text-xs border-b border-surface-850/60;
+  }
+
+  .table-clean tbody tr {
+    @apply transition-colors duration-150 hover:bg-surface-850/40;
+  }
+
+  .table-clean tbody tr:nth-child(even) {
+    @apply bg-surface-900/30;
+  }
+}
