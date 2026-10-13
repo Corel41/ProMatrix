@@ -130,7 +130,9 @@ CREATE TABLE public.branches (
     CONSTRAINT branches_effective_dates_check
         CHECK (effective_to IS NULL OR effective_to > effective_from),
     CONSTRAINT branches_company_code_unique
-        UNIQUE (company_id, code)       -- branch codes are unique within a company
+        UNIQUE (company_id, code),      -- branch codes are unique within a company
+    CONSTRAINT branches_company_id_id_key
+        UNIQUE (company_id, id)         -- required for compound FK from branch_memberships
 );
 
 COMMENT ON TABLE  public.branches IS 'Operational units within a company. Access is isolated to assigned branch membership by default.';
@@ -418,9 +420,6 @@ CREATE TABLE public.branch_memberships (
             REFERENCES public.branches (company_id, id)  -- references compound: we need unique on branches
 );
 
--- Create the compound unique needed by the above foreign key reference
-ALTER TABLE public.branches
-    ADD CONSTRAINT branches_company_id_id_unique UNIQUE (company_id, id);
 
 COMMENT ON TABLE  public.branch_memberships IS 'Scopes company members to specific branches. Cross-branch access requires an explicit, time-limited, approved grant.';
 COMMENT ON COLUMN public.branch_memberships.is_temporary IS 'TRUE = cross-branch grant. Must have access_purpose, approved_by, and access_expires_at.';
