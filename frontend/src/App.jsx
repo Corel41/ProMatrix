@@ -16,6 +16,7 @@ import Communications from './pages/Communications'
 import Employees from './pages/Employees'
 import Payroll from './pages/Payroll'
 import Settings from './pages/Settings'
+import DataImport from './pages/DataImport'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/administration" element={<Settings />} />
           <Route path="/audit-trail" element={<Settings />} />
+          <Route path="/data-import" element={<DataImport />} />
         </Route>
 
         <Route

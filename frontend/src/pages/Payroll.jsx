@@ -10,13 +10,13 @@ import {
   ShieldCheck,
   CreditCard,
   Users,
-  FileSpreadsheet,
-  Download,
-  ArrowRight,
-  Building2,
-  Receipt,
   Percent,
-  Calculator
+  Calculator,
+  Printer,
+  FileText,
+  Landmark,
+  Building,
+  Home
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { getTenantContext } from '../lib/tenantContext'
@@ -31,6 +31,7 @@ export default function Payroll() {
   const [context, setContext] = useState(null)
   const [existingRun, setExistingRun] = useState(null)
   const [processing, setProcessing] = useState(false)
+  const [selectedPayslipVoucher, setSelectedPayslipVoucher] = useState(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
 
@@ -41,7 +42,6 @@ export default function Payroll() {
 
   const calculateStatutory = (basicSalary, allowances = 0) => {
     const gross = basicSalary + allowances
-
     const nssf = Math.min(Math.round(gross * 0.06), 2160)
 
     let nhif = 0
@@ -56,6 +56,7 @@ export default function Payroll() {
     else if (gross <= 99999) nhif = 1400
     else nhif = 1700
 
+    const housingLevy = Math.round(gross * 0.015)
     const taxablePay = Math.max(0, gross - nssf)
     let grossTax = 0
 
@@ -67,15 +68,19 @@ export default function Payroll() {
       grossTax = (24000 * 0.10) + ((32333 - 24000) * 0.25) + ((taxablePay - 32333) * 0.30)
     }
 
-    const paye = Math.max(0, Math.round(grossTax - 2400))
-    const totalDeductions = nssf + nhif + paye
+    const personalRelief = 2400
+    const paye = Math.max(0, Math.round(grossTax - personalRelief))
+    const totalDeductions = nssf + nhif + paye + housingLevy
     const net = Math.max(0, gross - totalDeductions)
 
     return {
       gross,
+      taxablePay,
       nssf,
       nhif,
+      housingLevy,
       paye,
+      personalRelief,
       totalDeductions,
       net,
     }
@@ -151,6 +156,7 @@ export default function Payroll() {
   const totalGross = computedList.reduce((acc, row) => acc + row.gross, 0)
   const totalNssf = computedList.reduce((acc, row) => acc + row.nssf, 0)
   const totalNhif = computedList.reduce((acc, row) => acc + row.nhif, 0)
+  const totalHousingLevy = computedList.reduce((acc, row) => acc + row.housingLevy, 0)
   const totalPaye = computedList.reduce((acc, row) => acc + row.paye, 0)
   const totalDeductions = computedList.reduce((acc, row) => acc + row.totalDeductions, 0)
   const totalNet = computedList.reduce((acc, row) => acc + row.net, 0)
@@ -191,7 +197,6 @@ export default function Payroll() {
         if (runError) throw runError
         runId = newRun.id
       } else {
-
         const { error: updateRunErr } = await supabase
           .from('payroll_runs')
           .update({
@@ -222,6 +227,9 @@ export default function Payroll() {
         paye_tax: row.paye,
         nhif_deduction: row.nhif,
         nssf_deduction: row.nssf,
+        housing_levy: row.housingLevy,
+        taxable_pay: row.taxablePay,
+        personal_relief: row.personalRelief,
         net_pay: row.net,
       }))
 
@@ -232,7 +240,7 @@ export default function Payroll() {
       if (payslipsErr) throw payslipsErr
 
       setSuccessMsg(
-        `Payroll for ${monthNames[selectedMonth - 1]} ${selectedYear} processed successfully! ${computedList.length} payslips committed.`
+        `Payroll for ${monthNames[selectedMonth - 1]} ${selectedYear} processed and committed! ${computedList.length} payslips ledgered.`
       )
       await loadPayrollData()
     } catch (err) {
@@ -243,9 +251,12 @@ export default function Payroll() {
     }
   }
 
+  const handlePrint = () => {
+    window.print()
+  }
+
   return (
     <div className="w-full px-8 py-6 space-y-6 bg-surface-950 text-surface-100 min-h-full">
-
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-mono text-brand-400 mb-1">
@@ -253,14 +264,14 @@ export default function Payroll() {
             <ChevronRight className="h-3 w-3 text-surface-600" />
             <span>HR & Remuneration</span>
             <ChevronRight className="h-3 w-3 text-surface-600" />
-            <span className="text-surface-300">Monthly Payroll</span>
+            <span className="text-surface-300">Monthly Payroll Processing</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
             <DollarSign className="h-7 w-7 text-mint-400" />
             <span>Statutory Payroll Processing</span>
           </h1>
           <p className="mt-1 text-sm text-surface-400">
-            Process monthly remuneration with automated KRA PAYE tax, NSSF pension, and NHIF/SHIF deductions.
+            Automated statutory calculations: KRA PAYE bands, NSSF Tier I & II, NHIF/SHIF scales, and Affordable Housing Levy (1.5%).
           </p>
         </div>
 
@@ -310,7 +321,7 @@ export default function Payroll() {
             <CheckCircle2 className="h-4 w-4 text-brand-400 shrink-0" />
             <span>
               Payroll for <strong>{monthNames[selectedMonth - 1]} {selectedYear}</strong> has already been{' '}
-              <strong className="uppercase font-mono text-mint-300">{existingRun.status}</strong>. Processing again will update the run.
+              <strong className="uppercase font-mono text-mint-300">{existingRun.status}</strong>. Processing again will update and re-commit the batch.
             </span>
           </div>
           <span className="text-[11px] font-mono text-surface-400">
@@ -319,14 +330,13 @@ export default function Payroll() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3.5">
         <div className="p-4 rounded-2xl bg-surface-900/60 border border-surface-800/80 shadow-card">
           <div className="flex items-center justify-between text-xs text-surface-400 font-medium">
             <span>Total Gross Pay</span>
             <Users className="h-4 w-4 text-brand-400" />
           </div>
-          <p className="text-2xl font-bold text-white mt-1 font-mono">
+          <p className="text-xl font-bold text-white mt-1 font-mono">
             KES {totalGross.toLocaleString()}
           </p>
           <p className="text-[11px] text-surface-500 mt-1">{computedList.length} staff members</p>
@@ -334,10 +344,10 @@ export default function Payroll() {
 
         <div className="p-4 rounded-2xl bg-surface-900/60 border border-surface-800/80 shadow-card">
           <div className="flex items-center justify-between text-xs text-surface-400 font-medium">
-            <span>KRA PAYE Remittance</span>
+            <span>KRA PAYE</span>
             <Percent className="h-4 w-4 text-honey-400" />
           </div>
-          <p className="text-2xl font-bold text-honey-400 mt-1 font-mono">
+          <p className="text-xl font-bold text-honey-400 mt-1 font-mono">
             KES {totalPaye.toLocaleString()}
           </p>
           <p className="text-[11px] text-surface-500 mt-1">Tax withheld at source</p>
@@ -345,24 +355,35 @@ export default function Payroll() {
 
         <div className="p-4 rounded-2xl bg-surface-900/60 border border-surface-800/80 shadow-card">
           <div className="flex items-center justify-between text-xs text-surface-400 font-medium">
-            <span>NSSF & NHIF Deductions</span>
-            <ShieldCheck className="h-4 w-4 text-brand-400" />
+            <span>Housing Levy (1.5%)</span>
+            <Home className="h-4 w-4 text-teal-400" />
           </div>
-          <p className="text-2xl font-bold text-brand-300 mt-1 font-mono">
-            KES {(totalNssf + totalNhif).toLocaleString()}
+          <p className="text-xl font-bold text-teal-300 mt-1 font-mono">
+            KES {totalHousingLevy.toLocaleString()}
           </p>
-          <p className="text-[11px] text-surface-500 mt-1">NSSF: KES {totalNssf.toLocaleString()} | NHIF: KES {totalNhif.toLocaleString()}</p>
+          <p className="text-[11px] text-surface-500 mt-1">AHL Act 2024 compliance</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-surface-900/60 border border-surface-800/80 shadow-card">
           <div className="flex items-center justify-between text-xs text-surface-400 font-medium">
-            <span>Net Disbursable Amount</span>
+            <span>NSSF & NHIF</span>
+            <ShieldCheck className="h-4 w-4 text-brand-400" />
+          </div>
+          <p className="text-xl font-bold text-brand-300 mt-1 font-mono">
+            KES {(totalNssf + totalNhif).toLocaleString()}
+          </p>
+          <p className="text-[11px] text-surface-500 mt-1">NSSF: {totalNssf} | NHIF: {totalNhif}</p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-surface-900/60 border border-surface-800/80 shadow-card">
+          <div className="flex items-center justify-between text-xs text-surface-400 font-medium">
+            <span>Net Disbursable</span>
             <CreditCard className="h-4 w-4 text-mint-400" />
           </div>
-          <p className="text-2xl font-bold text-mint-400 mt-1 font-mono">
+          <p className="text-xl font-bold text-mint-400 mt-1 font-mono">
             KES {totalNet.toLocaleString()}
           </p>
-          <p className="text-[11px] text-surface-500 mt-1">Total payroll transfer commitment</p>
+          <p className="text-[11px] text-surface-500 mt-1">Total bank disbursement</p>
         </div>
       </div>
 
@@ -428,21 +449,22 @@ export default function Payroll() {
               <tr className="border-b border-surface-800/80 bg-surface-950/70 text-surface-400 font-medium uppercase tracking-wider font-mono text-[11px]">
                 <th className="py-3.5 px-4">Emp No</th>
                 <th className="py-3.5 px-4">Employee Name</th>
-                <th className="py-3.5 px-4">Designation</th>
                 <th className="py-3.5 px-4">Basic Salary</th>
                 <th className="py-3.5 px-4">Allowances</th>
                 <th className="py-3.5 px-4">Gross Pay</th>
                 <th className="py-3.5 px-4">NSSF</th>
                 <th className="py-3.5 px-4">NHIF</th>
+                <th className="py-3.5 px-4">Housing (1.5%)</th>
                 <th className="py-3.5 px-4">PAYE Tax</th>
-                <th className="py-3.5 px-4">Deductions</th>
+                <th className="py-3.5 px-4">Total Ded.</th>
                 <th className="py-3.5 px-4">Net Pay</th>
+                <th className="py-3.5 px-4 text-center">Payslip</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-850/60 font-sans">
               {loading ? (
                 <tr>
-                  <td colSpan="11" className="py-16 text-center text-surface-500">
+                  <td colSpan="12" className="py-16 text-center text-surface-500">
                     <div className="flex flex-col items-center gap-2">
                       <div className="h-6 w-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
                       <span className="text-xs font-mono">Calculating remuneration ledger...</span>
@@ -451,7 +473,7 @@ export default function Payroll() {
                 </tr>
               ) : computedList.length === 0 ? (
                 <tr>
-                  <td colSpan="11" className="py-16 text-center text-surface-500">
+                  <td colSpan="12" className="py-16 text-center text-surface-500">
                     No active employees registered to process for this month.
                   </td>
                 </tr>
@@ -465,26 +487,25 @@ export default function Payroll() {
                       {row.employee_no}
                     </td>
                     <td className="py-3.5 px-4 font-semibold text-surface-100 whitespace-nowrap">
-                      {row.first_name} {row.last_name}
-                    </td>
-                    <td className="py-3.5 px-4 text-surface-400 whitespace-nowrap">
-                      {row.job_title}
+                      <div>
+                        {row.first_name} {row.last_name}
+                      </div>
+                      <div className="text-[10px] text-surface-400 font-normal">
+                        {row.job_title}
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 font-mono text-surface-200 whitespace-nowrap">
                       KES {row.basicSalary.toLocaleString()}
                     </td>
                     <td className="py-2.5 px-4 whitespace-nowrap">
-                      <div className="relative w-28">
-                        <span className="absolute left-2.5 top-2 text-[10px] text-surface-500 font-mono">
-                          KES
-                        </span>
+                      <div className="relative w-24">
                         <input
                           type="number"
                           min="0"
                           step="100"
                           value={allowancesMap[row.id] !== undefined ? allowancesMap[row.id] : 0}
                           onChange={(e) => handleAllowanceChange(row.id, e.target.value)}
-                          className="w-full bg-surface-950 border border-surface-800 rounded-lg pl-9 pr-2 py-1 text-xs text-white font-mono focus:outline-none focus:border-brand-500/80 transition-all text-right"
+                          className="w-full bg-surface-950 border border-surface-800 rounded-lg px-2 py-1 text-xs text-white font-mono focus:outline-none focus:border-brand-500/80 transition-all text-right"
                         />
                       </div>
                     </td>
@@ -497,6 +518,9 @@ export default function Payroll() {
                     <td className="py-3.5 px-4 font-mono text-surface-400 whitespace-nowrap">
                       KES {row.nhif.toLocaleString()}
                     </td>
+                    <td className="py-3.5 px-4 font-mono text-teal-300 whitespace-nowrap">
+                      KES {row.housingLevy.toLocaleString()}
+                    </td>
                     <td className="py-3.5 px-4 font-mono text-honey-400 whitespace-nowrap">
                       KES {row.paye.toLocaleString()}
                     </td>
@@ -506,6 +530,15 @@ export default function Payroll() {
                     <td className="py-3.5 px-4 font-mono font-bold text-mint-400 whitespace-nowrap">
                       KES {row.net.toLocaleString()}
                     </td>
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                      <button
+                        onClick={() => setSelectedPayslipVoucher(row)}
+                        className="p-1.5 rounded-lg bg-surface-800/80 hover:bg-surface-700 text-surface-300 hover:text-white transition-colors cursor-pointer"
+                        title="View / Print Payslip Voucher"
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -513,7 +546,7 @@ export default function Payroll() {
             {computedList.length > 0 && (
               <tfoot>
                 <tr className="border-t-2 border-surface-800 bg-surface-950/90 font-mono text-xs text-white font-bold">
-                  <td colSpan="3" className="py-4 px-4 text-surface-300 uppercase">
+                  <td colSpan="2" className="py-4 px-4 text-surface-300 uppercase">
                     Grand Totals ({computedList.length} staff)
                   </td>
                   <td className="py-4 px-4">
@@ -531,6 +564,9 @@ export default function Payroll() {
                   <td className="py-4 px-4 text-surface-300">
                     KES {totalNhif.toLocaleString()}
                   </td>
+                  <td className="py-4 px-4 text-teal-300">
+                    KES {totalHousingLevy.toLocaleString()}
+                  </td>
                   <td className="py-4 px-4 text-honey-400">
                     KES {totalPaye.toLocaleString()}
                   </td>
@@ -540,6 +576,7 @@ export default function Payroll() {
                   <td className="py-4 px-4 text-mint-400 text-sm">
                     KES {totalNet.toLocaleString()}
                   </td>
+                  <td></td>
                 </tr>
               </tfoot>
             )}
@@ -548,7 +585,7 @@ export default function Payroll() {
 
         <div className="bg-surface-950/70 px-5 py-3.5 border-t border-surface-800/80 text-xs text-surface-400 flex items-center justify-between">
           <span>
-            Statutory Rules Applied: KRA Personal Relief KES 2,400/mo • NSSF Act 2013 Tier II Capped • NHIF/SHIF Standard Scales
+            Statutory Rules Applied: KRA Personal Relief KES 2,400/mo • NSSF Act 2013 Tier II Capped • NHIF/SHIF Scales • Housing Levy 1.5%
           </span>
           <div className="flex items-center gap-2 font-mono text-[11px] text-surface-500">
             <ShieldCheck className="h-3.5 w-3.5 text-mint-400" />
@@ -556,6 +593,180 @@ export default function Payroll() {
           </div>
         </div>
       </div>
+
+      {selectedPayslipVoucher && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/80 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:fixed print:inset-0">
+          <div className="bg-surface-900 border border-surface-800 rounded-3xl w-full max-w-2xl my-8 overflow-hidden shadow-elevated flex flex-col print:border-none print:shadow-none print:rounded-none print:m-0 print:w-full print:bg-white print:text-black">
+            <div className="px-6 py-4.5 border-b border-surface-800 flex items-center justify-between bg-surface-950/50 print:hidden">
+              <div className="flex items-center gap-2.5">
+                <FileText className="h-5 w-5 text-brand-400" />
+                <h3 className="text-base font-bold text-white font-sans">Official Payslip Voucher</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrint}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white transition-colors cursor-pointer"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  <span>Print Voucher</span>
+                </button>
+                <button
+                  onClick={() => setSelectedPayslipVoucher(null)}
+                  className="text-surface-400 hover:text-white p-1.5 rounded-xl hover:bg-surface-800 transition-colors cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-8 space-y-6 text-xs bg-surface-900 print:bg-white print:text-black font-sans">
+              <div className="flex items-start justify-between border-b border-surface-800 pb-5 print:border-gray-300">
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight text-white print:text-black">
+                    {context?.companyName || 'METROCOSMO VALUERS & PROPERTY MANAGERS'}
+                  </h2>
+                  <p className="text-xs text-surface-400 print:text-gray-600 mt-1">
+                    Branch: {context?.branchName || 'Head Office'} • Branch Code: {context?.branchCode}
+                  </p>
+                  <p className="text-xs text-surface-400 print:text-gray-600">
+                    Period: <strong>{monthNames[selectedMonth - 1]} {selectedYear}</strong>
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="inline-block px-3 py-1 rounded-lg text-xs font-mono font-bold bg-brand-950/50 text-brand-300 border border-brand-500/20 print:border-gray-400 print:text-black print:bg-gray-100">
+                    PAYSLIP VOUCHER
+                  </span>
+                  <p className="text-[11px] font-mono text-surface-400 print:text-gray-500 mt-1.5">
+                    Generated: {new Date().toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 bg-surface-950/50 print:bg-gray-50 p-4 rounded-2xl border border-surface-800/60 print:border-gray-200">
+                <div className="space-y-1.5">
+                  <div>
+                    <span className="text-[10px] text-surface-500 print:text-gray-500 uppercase font-mono">Employee Name:</span>
+                    <p className="font-bold text-white print:text-black text-sm">
+                      {selectedPayslipVoucher.title ? `${selectedPayslipVoucher.title} ` : ''}
+                      {selectedPayslipVoucher.first_name} {selectedPayslipVoucher.last_name}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-surface-500 print:text-gray-500 uppercase font-mono">Employee No:</span>
+                    <p className="font-mono font-bold text-brand-400 print:text-black">{selectedPayslipVoucher.employee_no}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-surface-500 print:text-gray-500 uppercase font-mono">Designation:</span>
+                    <p className="text-surface-300 print:text-gray-700">{selectedPayslipVoucher.job_title} ({selectedPayslipVoucher.department || 'Operations'})</p>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 font-mono text-xs">
+                  <div>
+                    <span className="text-[10px] text-surface-500 print:text-gray-500 uppercase">National ID:</span>
+                    <p className="text-surface-300 print:text-gray-700">{selectedPayslipVoucher.id_number || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-surface-500 print:text-gray-500 uppercase">KRA PIN / NSSF / NHIF:</span>
+                    <p className="text-surface-300 print:text-gray-700">
+                      {selectedPayslipVoucher.kra_pin || '—'} / {selectedPayslipVoucher.nssf_no || '—'} / {selectedPayslipVoucher.nhif_no || '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-surface-500 print:text-gray-500 uppercase">Disbursement Bank:</span>
+                    <p className="text-surface-300 print:text-gray-700">
+                      {selectedPayslipVoucher.bank_name || 'Cash Settlement'} {selectedPayslipVoucher.bank_account_no ? `(Acc: ${selectedPayslipVoucher.bank_account_no})` : ''}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-mint-400 print:text-black font-mono border-b border-surface-800 print:border-gray-300 pb-1.5">
+                    Earnings (KES)
+                  </h4>
+                  <div className="space-y-2 font-mono text-xs">
+                    <div className="flex justify-between text-surface-300 print:text-gray-700">
+                      <span>Basic Remuneration:</span>
+                      <span className="font-semibold text-white print:text-black">
+                        KES {selectedPayslipVoucher.basicSalary.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-surface-300 print:text-gray-700">
+                      <span>Housing / Travel Allowances:</span>
+                      <span className="font-semibold text-white print:text-black">
+                        KES {selectedPayslipVoucher.allowances.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="border-t border-surface-800 print:border-gray-300 pt-2 flex justify-between font-bold text-white print:text-black">
+                      <span>Total Gross Pay:</span>
+                      <span>KES {selectedPayslipVoucher.gross.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-coral-400 print:text-black font-mono border-b border-surface-800 print:border-gray-300 pb-1.5">
+                    Deductions (KES)
+                  </h4>
+                  <div className="space-y-2 font-mono text-xs">
+                    <div className="flex justify-between text-surface-300 print:text-gray-700">
+                      <span>NSSF Pension (Tier I & II):</span>
+                      <span className="font-semibold text-surface-200 print:text-black">
+                        KES {selectedPayslipVoucher.nssf.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-surface-300 print:text-gray-700">
+                      <span>NHIF / SHIF Medical:</span>
+                      <span className="font-semibold text-surface-200 print:text-black">
+                        KES {selectedPayslipVoucher.nhif.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-surface-300 print:text-gray-700">
+                      <span>Affordable Housing Levy (1.5%):</span>
+                      <span className="font-semibold text-teal-300 print:text-black">
+                        KES {selectedPayslipVoucher.housingLevy.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-surface-300 print:text-gray-700">
+                      <span>KRA PAYE Tax (Net of Relief):</span>
+                      <span className="font-semibold text-honey-400 print:text-black">
+                        KES {selectedPayslipVoucher.paye.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="border-t border-surface-800 print:border-gray-300 pt-2 flex justify-between font-bold text-coral-400 print:text-black">
+                      <span>Total Deductions:</span>
+                      <span>KES {selectedPayslipVoucher.totalDeductions.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-mint-950/40 print:bg-gray-100 p-4 rounded-2xl border border-mint-500/20 print:border-gray-300 flex items-center justify-between font-mono">
+                <div>
+                  <span className="text-[11px] text-mint-300 print:text-gray-600 uppercase font-semibold">Net Disbursable Remuneration:</span>
+                  <p className="text-xl font-bold text-mint-400 print:text-black mt-0.5">
+                    KES {selectedPayslipVoucher.net.toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-right text-[11px] text-surface-400 print:text-gray-600">
+                  <span>Authorized Signature: _______________________</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-surface-800 bg-surface-950/40 flex justify-end print:hidden">
+              <button
+                onClick={() => setSelectedPayslipVoucher(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-700 text-white transition-all cursor-pointer"
+              >
+                Close Voucher
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
