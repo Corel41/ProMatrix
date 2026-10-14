@@ -36,7 +36,7 @@ export default function Sidebar({ activeContext }) {
     { name: 'Service Charges', path: '/statements', icon: Receipt, roles: ['all'] },
     { name: 'Staff Registry', path: '/employees', icon: UserCheck, roles: ['admin'] },
     { name: 'Payroll', path: '/payroll', icon: Calculator, roles: ['admin'] },
-    { name: 'Reports', path: '/statements', icon: BarChart3, roles: ['all'] },
+    { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['all'] },
     { name: 'Contacts', path: '/landlords', icon: Contact, roles: ['all'] },
     { name: 'Data Import', path: '/data-import', icon: Database, roles: ['super_admin'] },
     { name: 'Settings', path: '/settings', icon: Settings, roles: ['admin'] },

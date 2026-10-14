@@ -15,6 +15,7 @@ import MeterReadings from './pages/MeterReadings'
 import Communications from './pages/Communications'
 import Employees from './pages/Employees'
 import Payroll from './pages/Payroll'
+import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 import DataImport from './pages/DataImport'
 
@@ -76,7 +77,7 @@ export default function App() {
 
           <Route path="/maintenance" element={<MeterReadings />} />
           <Route path="/service-charges" element={<TenantStatements />} />
-          <Route path="/reports" element={<TenantStatements />} />
+          <Route path="/reports" element={<Reports />} />
           <Route path="/contacts" element={<Landlords />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/administration" element={<Settings />} />
